@@ -1,0 +1,43 @@
+
+<!doctype html>
+<!--
+ This page is shown when the extension button is clicked, because the
+ "browser_action" field in manifest.json contains the "default_popup" key with
+ value "popup.html".
+ -->
+<html>
+  <head>
+    <title>Getting Started Extension's Popup</title>
+    <link rel="stylesheet" type="text/css" href="lib/css/materialize.min.css">
+    <!--
+      - JavaScript and HTML must be in separate files: see our Content Security
+      - Policy documentation[1] for details and explanation.
+      -
+      - [1]: https://developer.chrome.com/extensions/contentSecurityPolicy
+     -->
+    
+  </head>
+  <body style="width:500px; padding: 20px;">
+    <div class="container">
+      <div class="row">
+        <div class="col s12">
+          <div class="input-field">
+            <textarea id="note" class="materialize-textarea"  data-length="300"></textarea>
+            <label for="note">Invitation Note</label>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col s12">
+          <div class="input-field">
+            <button class="waves-effect waves-light btn" id="button">Start</button>
+          </div>
+        </div>
+      </div>
+          
+    </div>
+    <script src="lib/js/jquery.min.js"></script>
+    <script src="lib/js/materialize.min.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>

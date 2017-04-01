@@ -1,0 +1,28 @@
+{
+  "manifest_version": 2,
+
+  "name": "Linkedin Marketer",
+  "description": "Auto connect to search result page",
+  "version": "1.0",
+
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": false
+  },
+
+  "page_action": {
+    "default_icon": "images/icon.png",
+    "default_popup": "popup.html"
+  },
+  "permissions" : [
+    "declarativeContent",
+    "tabs",
+    "https://www.linkedin.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://www.linkedin.com/*"],
+      "js": ["lib/js/jquery.min.js","content.js"]
+    }
+  ]
+}
