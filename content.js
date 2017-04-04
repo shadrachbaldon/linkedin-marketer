@@ -7,12 +7,30 @@ $(document).ready(function(){
 chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
   	if (request.action === 'clicked') {
-  		// var profileLinkRegEx = '^https\:\/\/www\.linkedin\.com\/in\/\S*$';
-  		var connectElements = $(".search-result__image-wrapper [data-control-name=search_srp_result]");
-  		connectElements.each(function(element){
-  			console.log($(this).attr("href"));
-  		});
-	    
-	    sendResponse({status: "response from content.js"});
+  		console.log("==============")
+  		setTimeout(function () {
+	        console.log("waiting...")
+	        var connectElements = $(".search-result__actions--primary:contains('Connect')");
+	        console.log("total connect button found: "+ connectElements.length);
+	        for (var i = 0; i < connectElements.length; i++) {
+	        	connectElements.get(i).click();
+	        	console.log("harhar")
+	        	setTimeout(function(){
+					$(".button-primary-large").click();
+					console.log("ghghjghj");
+				},2000);
+	        }
+	  	// 	connectElements.each(function(index,element){
+				// connectElements.get(index).click();
+				// setTimeout(function(){
+				// 	$(".button-primary-large").click();
+				// },2000);
+				
+	  	// 		console.log($(this).attr("aria-label"));
+	  	// 	});
+		    
+		    sendResponse({status: "response from content.js"});
+	    }, 3000);
+	  		
 	}
 });
