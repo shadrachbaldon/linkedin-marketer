@@ -7,30 +7,41 @@ $(document).ready(function(){
 chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
   	if (request.action === 'clicked') {
-  		console.log("==============")
-  		setTimeout(function () {
-	        console.log("waiting...")
-	        var connectElements = $(".search-result__actions--primary:contains('Connect')");
-	        console.log("total connect button found: "+ connectElements.length);
-	        for (var i = 0; i < connectElements.length; i++) {
-	        	connectElements.get(i).click();
-	        	console.log("harhar")
-	        	setTimeout(function(){
-					$(".button-primary-large").click();
-					console.log("ghghjghj");
-				},2000);
-	        }
-	  	// 	connectElements.each(function(index,element){
-				// connectElements.get(index).click();
-				// setTimeout(function(){
-				// 	$(".button-primary-large").click();
-				// },2000);
-				
-	  	// 		console.log($(this).attr("aria-label"));
-	  	// 	});
-		    
-		    sendResponse({status: "response from content.js"});
+  		$('html, body').animate({
+	    	scrollTop: 1000
 	    }, 3000);
-	  		
+	    setTimeout(function(){
+	    	var connectElements = $(".search-result__actions--primary:contains('Connect')");
+		    console.log("total connect button found: "+ connectElements.length);
+		    if (connectElements.length > 0) {
+				var index = 0;
+			    var interval = setInterval(function(){
+			    	if (index == connectElements.length-1) {
+			    		$('html, body').animate({
+				        	scrollTop: $(connectElements.get(index)).offset().top
+				    	}, 300);
+				    	connectElements.get(index).click();
+				    	$(".button-primary-large").click();
+				    	clearInterval(interval);
+				    	sendResponse({status: "done", sent: index+1});
+				    	console.log("interval cleared!");
+				    	console.log("index: "+index);
+				    	index = 0;
+			    	}else{
+			    		$('html, body').animate({
+				        	scrollTop: $(connectElements.get(index)).offset().top
+				    	}, 300);
+				    	connectElements.get(index).click();
+				    	$(".button-primary-large").click();
+				    	console.log("index: "+index);
+				    	index ++;
+			    	}
+			    },3000);
+		    }
+		    else{
+		    	sendResponse({status: "empty", sent: 0});
+		    }
+			    
+	    },5000);
 	}
 });

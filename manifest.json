@@ -17,6 +17,7 @@
   "permissions" : [
     "declarativeContent",
     "tabs",
+    "storage",
     "https://www.linkedin.com/*"
   ],
   "content_scripts": [
