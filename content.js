@@ -4,6 +4,20 @@ console.log("content.js loaded!");
 $(document).ready(function(){
   console.log($("#login-email").val("test"));
 });
+chrome.storage.local.set({'InvitedTotal': 0}, function() {
+  console.log('Settings saved');
+});
+chrome.storage.local.get('InvitedTotal', function(result) {
+  console.log(result.InvitedTotal);
+});
+
+function updateValues(valueName, value){
+	console.log("updateValues called");
+	chrome.runtime.sendMessage({action: "updateValues",valueName:value}, function(response) {
+  		console.log(response.status);
+	});
+}
+
 chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
   	if (request.action === 'clicked') {
@@ -37,9 +51,9 @@ chrome.runtime.onMessage.addListener(
 				    	index ++;
 			    	}
 			    },3000);
-		    }
+			}
 		    else{
-		    	sendResponse({status: "empty", sent: 0});
+		    	updateValues('InvitedTotal',index);
 		    }
 			    
 	    },5000);
