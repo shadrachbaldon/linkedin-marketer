@@ -1,6 +1,6 @@
 $("#btnStart").click(function(){
-  chrome.storage.local.get('InvitedTotalToday', function(result) {
-    console.log(result.InvitedTotalToday);
+  chrome.storage.local.get('InvitedTotal', function(result) {
+    console.log(result.InvitedTotal);
   });
   console.log("clicked");
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
@@ -12,20 +12,36 @@ $("#btnStart").click(function(){
 
 chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
-    if (request.action === "updateValues" && request.valueName === "InvitedTotalToday"){
+    if (request.action === "updateValues" && request.valueName === "InvitedTotal"){
         var name = String(request.valueName);
         var value = request.value;
         var total = 0;
-        chrome.storage.local.get('InvitedTotalToday',function(data){
-          console.log("1 data.InvitedTotalToday: "+data.InvitedTotalToday);
+        chrome.storage.local.get('InvitedTotal',function(data){
+          console.log("1 data.InvitedTotal: "+data.InvitedTotal);
           console.log("2 value: "+value);
           console.log("3 name: "+name);
-          total = value + parseInt(data.InvitedTotalToday);
+          total = value + parseInt(data.InvitedTotal);
           console.log("4 total: "+total);
-          chrome.storage.local.set({'InvitedTotalToday':total},function(){
-            console.log("saved!");
+          chrome.storage.local.set({'InvitedTotal':total},function(){
+            console.log("InvitedTotal saved!");
           });
-          $("#TotalInvitedToday").text(data.InvitedTotalToday);
+          $("#TotalInvited").text(total);
+        });
+    }
+    if (request.action === "updateValues" && request.valueName === "ConnectCount"){
+        var name = String(request.valueName);
+        var value = request.value;
+        var total = 0;
+        chrome.storage.local.get('ConnectCount',function(data){
+          console.log("1 data.ConnectCount: "+data.ConnectCount);
+          console.log("2 value: "+value);
+          console.log("3 name: "+name);
+          chrome.storage.local.set({'ConnectCount':value},function(){
+            console.log("ConnectCount saved!");
+            console.log("5 data.ConnectCount: "+data.ConnectCount);
+          });
+          $("#CurrentPeriodConnect").text(value);
+
         });
     }
 });
@@ -38,9 +54,20 @@ $("#btnStop").click(function(){
   });
 });
 
+$("#btnClear").click(function(){
+  chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+    chrome.tabs.sendMessage(tabs[0].id, {action: "clear"}, function(response) {
+      console.log("Storage Cleared!");
+      chrome.storage.local.clear();
+    });
+  });
+});
+
 $("#btnDisplay").click(function(){
-  chrome.storage.local.get('InvitedTotalToday',function(data){
-    console.log("Display: "+ data.InvitedTotalToday);
-    $("#TotalInvitedToday").text(data.InvitedTotalToday);
+  chrome.storage.local.get(['InvitedTotal','ConnectCount'],function(data){
+    console.log("Display: "+ data.InvitedTotal);
+    $("#TotalInvited").text(data.InvitedTotal);
+    console.log("Display: "+ data.ConnectCount);
+    $("#CurrentPeriodConnect").text(data.ConnectCount);
   });
 });

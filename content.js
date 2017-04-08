@@ -4,18 +4,27 @@ console.log("content.js loaded!");
 $(document).ready(function(){
 
 	// global vars
-	var interval;
+	var ConnectPageInterval,PeriodInterval;
+	var ConnectCount = 0;
 
-	chrome.storage.local.get('InvitedTotalToday', function(result) {
-		if (typeof result.InvitedTotalToday === 'undefined') {
+	chrome.storage.local.get(['InvitedTotal','ConnectCount'], function(data) {
+		console.log("initialize variables");
+		if (typeof data.InvitedTotal === 'undefined') {
 			console.log("no value");
-			chrome.storage.local.set({'InvitedTotalToday': 0}, function() {
+			chrome.storage.local.set({'InvitedTotal': 0}, function() {
 			  console.log('Settings saved');
 			});
 		}else{
-			console.log(result.InvitedTotalToday);
+			console.log("Data InvitedTotal: "+data.InvitedTotal);
 		}
-		
+		if (typeof data.ConnectCount === 'undefined') {
+			console.log("no value");
+			chrome.storage.local.set({'ConnectCount': 0}, function() {
+			  console.log('Settings saved');
+			});
+		}else{
+			console.log("Data ConnectCount: "+data.ConnectCount);
+		}
 	});
 	
 	function updateValues(valueName, value){
@@ -27,6 +36,13 @@ $(document).ready(function(){
 		});
 	}
 
+	function nextPage(){
+		var page = 1;
+		page ++;
+		console.log("goint to page: "+page)
+		window.location = "https://.linkedin.com/search/results/people/?facetIndustry=%5B%2296%22%2C%224%22%5D&facetNetwork=%5B%22S%22%5D&keywords=Recruiter&origin=FACETED_SEARCH&page="+page;
+	}
+
 	function connectFromSearchPage(){
 		$('html, body').animate({
 		   	scrollTop: 1000
@@ -34,33 +50,41 @@ $(document).ready(function(){
 		   setTimeout(function(){
 		   	var connectElements = $(".search-result__actions--primary:contains('Connect')");
 		    console.log("total connect button found: "+ connectElements.length);
+		    var index = 0;
 		    if (connectElements.length > 0) {
-				var index = 0;
-			    interval = setInterval(function(){
+			    ConnectPageInterval = setInterval(function(){
 			    	if (index == connectElements.length-1) {
 			    		$('html, body').animate({
 				        	scrollTop: $(connectElements.get(index)).offset().top
 				    	}, 300);
 				    	// connectElements.get(index).click();
 				    	// $(".button-primary-large").click();
-				    	clearInterval(interval);
+				    	ConnectCount ++;
+				    	clearInterval(ConnectPageInterval);
 				    	console.log("interval cleared!");
 				    	console.log("index: "+index);
-				    	updateValues('InvitedTotalToday',connectElements.length);
+				    	updateValues('InvitedTotal',1);
+				    	updateValues('ConnectCount',ConnectCount);
+				    	nextPage();
 				    	index = 0;
+				    	connectFromSearchPage();
 			    	}else{
 			    		$('html, body').animate({
 				        	scrollTop: $(connectElements.get(index)).offset().top
 				    	}, 300);
 				    	// connectElements.get(index).click();
 				    	// $(".button-primary-large").click();
+				    	ConnectCount ++;
 				    	console.log("index: "+index);
+				    	updateValues('InvitedTotal',1);
+				    	updateValues('ConnectCount',ConnectCount);
 				    	index ++;
 			    	}
+			    	console.log("Connect Count: "+ ConnectCount);
 			    },3000);
 			}
 		    else{
-		    	updateValues('InvitedTotalToday',connectElements.length);
+		    	updateValues('InvitedTotal',connectElements.length);
 		    }
 			    
 		   },5000);
@@ -72,7 +96,8 @@ $(document).ready(function(){
 	  		connectFromSearchPage();
 		}
 		if (request.action === 'stop') {
-			clearInterval(interval);
+			clearInterval(ConnectPageInterval);
+			location.reload();
 			console.log("stopped!");
 		}
 
