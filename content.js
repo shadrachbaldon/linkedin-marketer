@@ -7,7 +7,7 @@ $(document).ready(function(){
 	var ConnectPageInterval,PeriodInterval;
 	var ConnectCount = 0;
 
-	chrome.storage.local.get(['InvitedTotal','ConnectCount'], function(data) {
+	chrome.storage.local.get(['InvitedTotal','ConnectCount','Page'], function(data) {
 		console.log("initialize variables");
 		if (typeof data.InvitedTotal === 'undefined') {
 			console.log("no value");
@@ -25,6 +25,15 @@ $(document).ready(function(){
 		}else{
 			console.log("Data ConnectCount: "+data.ConnectCount);
 		}
+		if (typeof data.page === 'undefined') {
+			console.log("no value");
+			chrome.storage.local.set({'Page': 1}, function() {
+			  console.log('Settings saved');
+			});
+			console.log("Page: "+data.Page);
+		}else{
+			console.log("Page: "+data.Page);
+		}
 	});
 	
 	function updateValues(valueName, value){
@@ -37,10 +46,18 @@ $(document).ready(function(){
 	}
 
 	function nextPage(){
-		var page = 1;
-		page ++;
-		console.log("goint to page: "+page)
-		window.location = "https://.linkedin.com/search/results/people/?facetIndustry=%5B%2296%22%2C%224%22%5D&facetNetwork=%5B%22S%22%5D&keywords=Recruiter&origin=FACETED_SEARCH&page="+page;
+		chrome.storage.local.get('Page', function(data) {
+			  var page = parseInt(data.Page);
+			  console.log("page: "+page);
+			  console.log("data.Page: "+data.Page);
+			  page = page + 1;
+			  console.log("data.Page: "+data.Page);
+			  updateValues('Page',1);
+			  chrome.runtime.sendMessage({action: "nextPage"}, function(response) {
+					// console.log(response.status);
+				});
+		// window.location = "https://www.linkedin.com/search/results/people/?facetIndustry=%5B%2296%22%2C%224%22%5D&facetNetwork=%5B%22S%22%5D&keywords=Recruiter&origin=FACETED_SEARCH&page="+page;
+		});		
 	}
 
 	function connectFromSearchPage(){
@@ -53,41 +70,47 @@ $(document).ready(function(){
 		    var index = 0;
 		    if (connectElements.length > 0) {
 			    ConnectPageInterval = setInterval(function(){
-			    	if (index == connectElements.length-1) {
-			    		$('html, body').animate({
-				        	scrollTop: $(connectElements.get(index)).offset().top
-				    	}, 300);
-				    	// connectElements.get(index).click();
-				    	// $(".button-primary-large").click();
-				    	ConnectCount ++;
-				    	clearInterval(ConnectPageInterval);
-				    	console.log("interval cleared!");
-				    	console.log("index: "+index);
-				    	updateValues('InvitedTotal',1);
-				    	updateValues('ConnectCount',ConnectCount);
-				    	nextPage();
-				    	index = 0;
-				    	connectFromSearchPage();
+			    	if (ConnectCount >= 30) {
+			    		clearInterval(ConnectPageInterval);
+			    		console.log("stopped! limit reached");
+
 			    	}else{
-			    		$('html, body').animate({
-				        	scrollTop: $(connectElements.get(index)).offset().top
-				    	}, 300);
-				    	// connectElements.get(index).click();
-				    	// $(".button-primary-large").click();
-				    	ConnectCount ++;
-				    	console.log("index: "+index);
-				    	updateValues('InvitedTotal',1);
-				    	updateValues('ConnectCount',ConnectCount);
-				    	index ++;
+			    		if (index == connectElements.length-1) {
+				    		$('html, body').animate({
+					        	scrollTop: $(connectElements.get(index)).offset().top
+					    	}, 300);
+					    	// connectElements.get(index).click();
+					    	// $(".button-primary-large").click();
+					    	ConnectCount ++;
+					    	clearInterval(ConnectPageInterval);
+					    	console.log("interval cleared!");
+					    	console.log("index: "+index);
+					    	updateValues('InvitedTotal',1);
+					    	updateValues('ConnectCount',ConnectCount);
+					    	nextPage();
+					    	index = 0;
+					    	connectFromSearchPage();
+				    	}else{
+				    		$('html, body').animate({
+					        	scrollTop: $(connectElements.get(index)).offset().top
+					    	}, 300);
+					    	// connectElements.get(index).click();
+					    	// $(".button-primary-large").click();
+					    	ConnectCount ++;
+					    	console.log("index: "+index);
+					    	updateValues('InvitedTotal',1);
+					    	updateValues('ConnectCount',ConnectCount);
+					    	index ++;
+				    	}
 			    	}
 			    	console.log("Connect Count: "+ ConnectCount);
-			    },3000);
+			    },2000);
 			}
 		    else{
 		    	updateValues('InvitedTotal',connectElements.length);
 		    }
 			    
-		   },5000);
+		   },3000);
 	}
 	
 	chrome.runtime.onMessage.addListener(

@@ -1,3 +1,17 @@
+chrome.storage.local.get(['InvitedTotal','ConnectCount'], function(data) {
+  console.log("initialize variables");
+  if (typeof data.InvitedTotal === 'undefined') {
+    $("#TotalInvited").text("0");
+  }else{
+    $("#TotalInvited").text(data.InvitedTotal);
+  }
+  if (typeof data.ConnectCount === 'undefined') {
+    $("#CurrentPeriodConnect").text("0");
+  }else{
+    $("#CurrentPeriodConnect").text(data.ConnectCount);
+  }
+});
+
 $("#btnStart").click(function(){
   chrome.storage.local.get('InvitedTotal', function(result) {
     console.log(result.InvitedTotal);
@@ -28,6 +42,7 @@ chrome.runtime.onMessage.addListener(
           $("#TotalInvited").text(total);
         });
     }
+
     if (request.action === "updateValues" && request.valueName === "ConnectCount"){
         var name = String(request.valueName);
         var value = request.value;
@@ -42,6 +57,34 @@ chrome.runtime.onMessage.addListener(
           });
           $("#CurrentPeriodConnect").text(value);
 
+        });
+    }
+
+    if (request.action === "nextPage"){
+      console.log("popup.js nextPage");
+      setTimeout(function(){
+        
+        chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+          chrome.tabs.sendMessage(tabs[0].id, {action: "start"}, function(response) {
+            
+          });
+        });
+      },5000);
+    }
+
+    if (request.action === "updateValues" && request.valueName === "Page"){
+        var name = String(request.valueName);
+        var value = request.value;
+        var total = 0;
+        chrome.storage.local.get('Page',function(data){
+          console.log("1 data.Page: "+data.Page);
+          console.log("2 value: "+value);
+          console.log("3 name: "+name);
+          total = value + parseInt(data.Page);
+          console.log("4 total: "+total);
+          chrome.storage.local.set({'Page':total},function(){
+            console.log("Page saved!");
+          });
         });
     }
 });
