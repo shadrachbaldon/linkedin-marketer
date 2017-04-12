@@ -17,11 +17,13 @@ $("#btnStart").click(function(){
     console.log(result.InvitedTotal);
   });
   console.log("clicked");
-    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-      chrome.tabs.sendMessage(tabs[0].id, {action: "start"}, function(response) {
-        // console.log(response.status);
-      });
-    });
+  $("#Status").text("Connecting new contacts");
+  $("#btnStart").attr("disabled");
+    // chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+    //   chrome.tabs.sendMessage(tabs[0].id, {action: "start"}, function(response) {
+    //     // console.log(response.status);
+    //   });
+    // });
 });
 
 chrome.runtime.onMessage.addListener(
@@ -31,13 +33,8 @@ chrome.runtime.onMessage.addListener(
         var value = request.value;
         var total = 0;
         chrome.storage.local.get('InvitedTotal',function(data){
-          console.log("1 data.InvitedTotal: "+data.InvitedTotal);
-          console.log("2 value: "+value);
-          console.log("3 name: "+name);
           total = value + parseInt(data.InvitedTotal);
-          console.log("4 total: "+total);
           chrome.storage.local.set({'InvitedTotal':total},function(){
-            console.log("InvitedTotal saved!");
           });
           $("#TotalInvited").text(total);
         });
@@ -48,14 +45,10 @@ chrome.runtime.onMessage.addListener(
         var value = request.value;
         var total = 0;
         chrome.storage.local.get('ConnectCount',function(data){
-          console.log("1 data.ConnectCount: "+data.ConnectCount);
-          console.log("2 value: "+value);
-          console.log("3 name: "+name);
-          chrome.storage.local.set({'ConnectCount':value},function(){
-            console.log("ConnectCount saved!");
-            console.log("5 data.ConnectCount: "+data.ConnectCount);
+          total = value + parseInt(data.ConnectCount);
+          chrome.storage.local.set({'ConnectCount':total},function(){
           });
-          $("#CurrentPeriodConnect").text(value);
+          $("#CurrentPeriodConnect").text(total);
 
         });
     }
@@ -81,9 +74,11 @@ chrome.runtime.onMessage.addListener(
           console.log("2 value: "+value);
           console.log("3 name: "+name);
           total = value + parseInt(data.Page);
-          console.log("4 total: "+total);
+          console.log("4 Page total: "+total);
           chrome.storage.local.set({'Page':total},function(){
             console.log("Page saved!");
+            console.log("Page new value: "+data.Page);
+            console.log("Total after set: "+total);
           });
         });
     }
@@ -101,16 +96,17 @@ $("#btnClear").click(function(){
   chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
     chrome.tabs.sendMessage(tabs[0].id, {action: "clear"}, function(response) {
       console.log("Storage Cleared!");
-      chrome.storage.local.clear();
+      chrome.storage.local.set({'InvitedTotal':0,'ConnectCount':0,'Page':1});
     });
   });
 });
 
 $("#btnDisplay").click(function(){
-  chrome.storage.local.get(['InvitedTotal','ConnectCount'],function(data){
+  chrome.storage.local.get(['InvitedTotal','ConnectCount','Page'],function(data){
     console.log("Display: "+ data.InvitedTotal);
     $("#TotalInvited").text(data.InvitedTotal);
     console.log("Display: "+ data.ConnectCount);
     $("#CurrentPeriodConnect").text(data.ConnectCount);
+    console.log("Display: "+ data.Page);
   });
 });

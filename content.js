@@ -20,12 +20,14 @@ $(document).ready(function(){
 		if (typeof data.ConnectCount === 'undefined') {
 			console.log("no value");
 			chrome.storage.local.set({'ConnectCount': 0}, function() {
+				ConnectCount = 0;
 			  console.log('Settings saved');
 			});
 		}else{
 			console.log("Data ConnectCount: "+data.ConnectCount);
+			ConnectCount = data.ConnectCount;
 		}
-		if (typeof data.page === 'undefined') {
+		if (typeof data.Page === 'undefined') {
 			console.log("no value");
 			chrome.storage.local.set({'Page': 1}, function() {
 			  console.log('Settings saved');
@@ -47,16 +49,25 @@ $(document).ready(function(){
 
 	function nextPage(){
 		chrome.storage.local.get('Page', function(data) {
-			  var page = parseInt(data.Page);
-			  console.log("page: "+page);
-			  console.log("data.Page: "+data.Page);
-			  page = page + 1;
-			  console.log("data.Page: "+data.Page);
-			  updateValues('Page',1);
-			  chrome.runtime.sendMessage({action: "nextPage"}, function(response) {
+			var page = parseInt(data.Page);
+			console.log("page: "+page);
+			console.log("data.Page: "+data.Page);
+			page = page + 1;
+			console.log("data.Page: "+data.Page);
+			updateValues('Page',1);
+			chrome.runtime.sendMessage({action: "nextPage"}, function(response) {
 					// console.log(response.status);
 				});
-		// window.location = "https://www.linkedin.com/search/results/people/?facetIndustry=%5B%2296%22%2C%224%22%5D&facetNetwork=%5B%22S%22%5D&keywords=Recruiter&origin=FACETED_SEARCH&page="+page;
+			console.log("page before window.location: "+page);
+			var url = window.location.href;
+			if (page < 3) {
+				url = window.location.href+"&page="+page;
+			}else{
+				url = url.substr(0,window.location.href.length-7);
+				url = url+"&page="+page;
+			}
+			console.log("url: "+url);
+			window.location = url;
 		});		
 	}
 
@@ -70,7 +81,7 @@ $(document).ready(function(){
 		    var index = 0;
 		    if (connectElements.length > 0) {
 			    ConnectPageInterval = setInterval(function(){
-			    	if (ConnectCount >= 30) {
+			    	if (ConnectCount >= 10) {
 			    		clearInterval(ConnectPageInterval);
 			    		console.log("stopped! limit reached");
 
@@ -86,7 +97,7 @@ $(document).ready(function(){
 					    	console.log("interval cleared!");
 					    	console.log("index: "+index);
 					    	updateValues('InvitedTotal',1);
-					    	updateValues('ConnectCount',ConnectCount);
+					    	updateValues('ConnectCount',1);
 					    	nextPage();
 					    	index = 0;
 					    	connectFromSearchPage();
@@ -99,7 +110,7 @@ $(document).ready(function(){
 					    	ConnectCount ++;
 					    	console.log("index: "+index);
 					    	updateValues('InvitedTotal',1);
-					    	updateValues('ConnectCount',ConnectCount);
+					    	updateValues('ConnectCount',1);
 					    	index ++;
 				    	}
 			    	}
