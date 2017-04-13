@@ -1,21 +1,9 @@
-
+<!-- 
 <!doctype html>
-<!--
- This page is shown when the extension button is clicked, because the
- "browser_action" field in manifest.json contains the "default_popup" key with
- value "popup.html".
- -->
 <html>
   <head>
     <title>Getting Started Extension's Popup</title>
     <link rel="stylesheet" type="text/css" href="lib/css/materialize.min.css">
-    <!--
-      - JavaScript and HTML must be in separate files: see our Content Security
-      - Policy documentation[1] for details and explanation.
-      -
-      - [1]: https://developer.chrome.com/extensions/contentSecurityPolicy
-     -->
-    
   </head>
   <body style="width:500px; padding: 20px;">
     <div class="container">
@@ -40,10 +28,9 @@
           </div>
         </div>
       </div>
-      <div class="row">
+      <div class="row" id="nextPeriodWrap">
         <div class="col s12">
           <p class="flow-text">Next Period: <span id="nextPeriodCount">00:00:00</span></p>
-          <!-- <p class="flow-text">Total Invite Today: <span id="TotalInvitedToday">0</span></p> -->
         </div>
       </div>
       <div class="row">
@@ -62,7 +49,7 @@
         </div>
         <div class="col s3">
           <div class="input-field">
-            <button class="waves-effect waves-light btn" id="btnStop">Stop</button>
+            <button class="waves-effect waves-light btn" id="btnStop">Cancel</button>
           </div>
         </div>
         <div class="col s3">
@@ -80,6 +67,7 @@
     </div>
     <script src="lib/js/jquery.min.js"></script>
     <script src="lib/js/materialize.min.js"></script>
+    <script src="lib/js/jquery.countdownTimer.min.js"></script>
     <script src="popup.js"></script>
   </body>
-</html>
+</html> -->

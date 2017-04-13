@@ -11,19 +11,23 @@ chrome.storage.local.get(['InvitedTotal','ConnectCount'], function(data) {
     $("#CurrentPeriodConnect").text(data.ConnectCount);
   }
 });
+$("#nextPeriodWrap").hide();
 
 $("#btnStart").click(function(){
   chrome.storage.local.get('InvitedTotal', function(result) {
     console.log(result.InvitedTotal);
   });
   console.log("clicked");
-  $("#Status").text("Connecting new contacts");
-  $("#btnStart").attr("disabled");
+  $("#Status").text("Connecting new contacts"); // change the status display
+  $(this).attr("disabled","disabled");
     // chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-    //   chrome.tabs.sendMessage(tabs[0].id, {action: "start"}, function(response) {
-    //     // console.log(response.status);
-    //   });
+    //   chrome.tabs.sendMessage(tabs[0].id, {action: "reloadPage"});
     // });
+    // setTimeout(function(){
+    //   chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+    //     chrome.tabs.sendMessage(tabs[0].id, {action: "start"});
+    //   });
+    // },5000);
 });
 
 chrome.runtime.onMessage.addListener(
@@ -58,11 +62,33 @@ chrome.runtime.onMessage.addListener(
       setTimeout(function(){
         
         chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-          chrome.tabs.sendMessage(tabs[0].id, {action: "start"}, function(response) {
-            
-          });
+          chrome.tabs.sendMessage(tabs[0].id, {action: "start"});
         });
       },5000);
+    }
+
+    if (request.action === "standBy") {
+      $("#nextPeriodWrap").show();
+      $("#Status").text("Waiting for the next period"); //change the status display
+      $("#nextPeriodCount").countdowntimer({
+        hours:0,
+        minutes:0,
+        seconds:10,
+        timeUp: function(){
+          console.log("Moving to next period.");
+          $("#nextPeriodWrap").hide();
+          $("#Status").text("Connecting new contacts..");
+          chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+            chrome.tabs.sendMessage(tabs[0].id, {action: "navigateToLastPage"});
+          });
+          setTimeout(function(){
+            chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+              chrome.tabs.sendMessage(tabs[0].id, {action: "start"});
+            });
+          },5000);
+        }
+      });
+
     }
 
     if (request.action === "updateValues" && request.valueName === "Page"){
