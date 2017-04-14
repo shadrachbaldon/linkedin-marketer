@@ -5,8 +5,9 @@ $(document).ready(function(){
 	$.get(chrome.extension.getURL('/ui.html'), function(data) {
 	    $(data).appendTo('body');
 	});
+	// chrome.storage.local.clear();
 	// global vars
-	var ConnectPageInterval,PeriodInterval,Status,InvitedTotal,Page;
+	var ConnectPageInterval,PeriodInterval,Status,InvitedTotal,Page,ConnectPerPeriod,HoursPerPeriod;
 	var ConnectCount = 0;
 	// initialize values
 	chrome.storage.local.get(['InvitedTotal','ConnectCount','Page','Status'], function(data) {
@@ -14,7 +15,6 @@ $(document).ready(function(){
 		if (typeof data.InvitedTotal === 'undefined') {
 			console.log("no value");
 			chrome.storage.local.set({'InvitedTotal': 0}, function() {
-			  console.log('Settings saved');
 			});
 			InvitedTotal = 0;
 		}else{
@@ -53,18 +53,40 @@ $(document).ready(function(){
 	});
 
 	setTimeout(function(){
-		$("#Status").text("Ready").css("color","#00aa00");
-		$("#btnStart").removeAttr("disabled");
-		$("#btnStart").click(function(){
-			$(this).attr("disabled","disabled");
+		if (Status === "continue") {
+			$("#btnStart").attr("disabled","disabled");
 			$("#btnStop").removeAttr("disabled");
 			connectFromSearchPage();
+		}else{
+			$("#Status").text("Ready").css("color","#00aa00");
+			$("#btnStart").removeAttr("disabled");
+		}
+		$("#TotalInvited").text(InvitedTotal);
+		$("#CurrentPeriodConnect").text(ConnectCount);
+		$("#btnStart").click(function(){
+			ConnectPerPeriod = $("#ConnectsPerPeriod").val();
+			HoursPerPeriod = $("#HoursPerPeriod").val();
+			if (ConnectPerPeriod === '' || HoursPerPeriod === '') {
+				alert("Connects and Hours per period must have a value!");
+			}else{
+				HoursPerPeriod = parseInt(HoursPerPeriod);
+				HoursInMs = HoursPerPeriod*60*60;
+				ConnectPerPeriod = parseInt(ConnectPerPeriod);
+				console.log("HoursPerPeriod: "+HoursPerPeriod);
+				$(this).attr("disabled","disabled");
+				$("#btnStop").removeAttr("disabled");
+				connectFromSearchPage();
+			}
+			
 		});
 		$("#btnStop").click(function(){
 			$("#btnStart").removeAttr("disabled");
 			$(this).attr("disabled","disabled");
+			chrome.storage.local.set({'ConnectCount':0, 'Status':'false'});
+			ConnectCount = 0;
 			clearInterval(ConnectPageInterval);
 			console.log("canceled");
+			window.location.reload();
 		});
 	},5000);
 	
@@ -85,8 +107,7 @@ $(document).ready(function(){
 				var total = 0;
 		        chrome.storage.local.get('ConnectCount',function(data){
 		          	total = value + parseInt(data.ConnectCount);
-		          	chrome.storage.local.set({'ConnectCount':total},function(){
-		          	});
+		          	chrome.storage.local.set({'ConnectCount':total});
 		          	$("#CurrentPeriodConnect").text(total);
 
 		        });
@@ -98,60 +119,50 @@ $(document).ready(function(){
 			    },5000);
 			break;
 			case "standBy":
-				$("#nextPeriodWrap").show();
-			    $("#Status").text("Waiting for the next period"); //change the status display
-			    $("#nextPeriodCount").countdowntimer({
-			      hours:0,
-			      minutes:0,
-			      seconds:10,
-			      timeUp: function(){
-			        console.log("Moving to next period.");
-			        $("#nextPeriodWrap").hide();
-			        $("#Status").text("Connecting new contacts..");
-			        chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-			          chrome.tabs.sendMessage(tabs[0].id, {action: "navigateToLastPage"});
-			        });
-			        setTimeout(function(){
-			          chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-			            chrome.tabs.sendMessage(tabs[0].id, {action: "start"});
-			          });
-			        },5000);
-			      }
-			    });
+				
+			break;
+			case "LastPage":
+				chrome.storage.local.set({'LastPage':value});
 			break;
 		}
 	}
 
 	function nextPage(){
-		chrome.storage.local.get('Page', function(data) {
-			var page = parseInt(data.Page);
-			console.log("page: "+page);
-			console.log("data.Page: "+data.Page);
-			page = page + 1;
-			console.log("data.Page: "+data.Page);
-			updateValues('Page',1);
-			// chrome.runtime.sendMessage({action: "nextPage"});
-			console.log("page before window.location: "+page);
-			var url = window.location.href;
-			if (page < 3) {
-				url = window.location.href+"&page="+page;
-			}else{
-				url = url.substr(0,window.location.href.length-7);
-				url = url+"&page="+page;
-			}
-			console.log("url: "+url);
-			window.location = url;
-		});
+		var page;
+		var url = window.location.href;
+		if (url.search("page=") >= 0) {
+			page = url.substring(url.search("page=")+5, url.length);
+			page = parseInt(page);
+			console.log(page);
+		}else{
+			page = 1
+			console.log("1");
+		}
+		if (page < 100) {
+			$("button.next").click();
+		}else{
+			$("#Status").text("Finished").css("color","#fbbc05");
+			alert("Task Completed!");
+			// $("#btnStop").click();
+		}
 	}
 
 	function standBy(){
 		console.log("standBy called");
-		chrome.runtime.sendMessage({action: "standBy"});
 		chrome.storage.local.set({'lastPage':window.location.href});
-	}
-
-	function reload(){
-		window.location.reload();
+		$("#nextPeriodWrap").show();
+	    $("#Status").text("Waiting for the next period").css("color","#aa0000"); //change the status display
+	    $("#nextPeriodCount").countdowntimer({
+	      hours:HoursPerPeriod,
+	      timeUp: function(){
+	        console.log("Moving to next period.");
+	        $("#nextPeriodWrap").hide();
+	        $("#Status").text("Connecting new contacts..").css("color","#0000aa");
+	        chrome.storage.local.set({'ConnectCount':0,'Status':'continue'});
+	        ConnectCount = 0;
+	        window.location.reload();
+	      }
+	    });
 	}
 
 	function navigateToLastPage(){
@@ -172,7 +183,7 @@ $(document).ready(function(){
 		    var index = 0;
 		    if (connectElements.length > 0) {
 			    ConnectPageInterval = setInterval(function(){
-			    	if (ConnectCount >= 10) {
+			    	if (ConnectCount >= ConnectPerPeriod) { //make this dynamic
 			    		clearInterval(ConnectPageInterval);
 			    		console.log("stopped! limit reached");
 			    		standBy();
@@ -191,7 +202,10 @@ $(document).ready(function(){
 					    	updateValues('ConnectCount',1);
 					    	nextPage();
 					    	index = 0;
-					    	connectFromSearchPage();
+					    	setTimeout(function(){
+					    		// waits 3 seconds before continuing to make sure next page elements was loaded
+					    		connectFromSearchPage();
+					    	},3000);
 				    	}else{
 				    		$('html, body').animate({
 					        	scrollTop: $(connectElements.get(index)).offset().top
