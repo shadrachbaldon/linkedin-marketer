@@ -7,10 +7,10 @@ $(document).ready(function(){
 	});
 	// chrome.storage.local.clear();
 	// global vars
-	var ConnectPageInterval,PeriodInterval,Status,InvitedTotal,Page,ConnectPerPeriod,HoursPerPeriod;
+	var ConnectPageInterval,PeriodInterval,Status,InvitedTotal,Page,ConnectPerPeriod,HoursPerPeriod,Note;
 	var ConnectCount = 0;
 	// initialize values
-	chrome.storage.local.get(['InvitedTotal','ConnectCount','Page','Status'], function(data) {
+	chrome.storage.local.get(['InvitedTotal','ConnectCount','Status'], function(data) {
 		console.log("initialize variables");
 		if (typeof data.InvitedTotal === 'undefined') {
 			console.log("no value");
@@ -24,20 +24,9 @@ $(document).ready(function(){
 		if (typeof data.ConnectCount === 'undefined') {
 			console.log("no value");
 			chrome.storage.local.set({'ConnectCount': 0}, function() {
-				ConnectCount = 0;
 			});
 		}else{
 			console.log("Data ConnectCount: "+data.ConnectCount);
-			ConnectCount = data.ConnectCount;
-		}
-		if (typeof data.Page === 'undefined') {
-			console.log("no value");
-			chrome.storage.local.set({'Page': 1});
-			console.log("Page: "+data.Page);
-			Page = 1;
-		}else{
-			console.log("Page: "+data.Page);
-			Page = data.Page;
 		}
 		if (typeof data.Status === 'undefined') {
 			console.log("no value");
@@ -53,7 +42,24 @@ $(document).ready(function(){
 	});
 
 	setTimeout(function(){
+		
+		console.log("ConnectPerPeriod: "+ ConnectPerPeriod);
 		if (Status === "continue") {
+			chrome.storage.local.get(['ConnectPerPeriod','HoursPerPeriod','Note'],function(data){
+				
+				if (typeof data.Note === 'undefined') {
+					$("#ConnectsPerPeriod").val(data.ConnectPerPeriod);
+					$("#HoursPerPeriod").val(data.HoursPerPeriod);
+					HoursPerPeriod = parseInt(data.HoursPerPeriod);
+					ConnectPerPeriod = parseInt(data.ConnectPerPeriod);
+				}else{
+					$("#ConnectsPerPeriod").val(data.ConnectPerPeriod);
+					$("#HoursPerPeriod").val(data.HoursPerPeriod);
+					$("#note").val(data.Note);
+					HoursPerPeriod = parseInt(data.HoursPerPeriod);
+					ConnectPerPeriod = parseInt(data.ConnectPerPeriod);
+				}
+			});
 			$("#btnStart").attr("disabled","disabled");
 			$("#btnStop").removeAttr("disabled");
 			connectFromSearchPage();
@@ -66,13 +72,21 @@ $(document).ready(function(){
 		$("#btnStart").click(function(){
 			ConnectPerPeriod = $("#ConnectsPerPeriod").val();
 			HoursPerPeriod = $("#HoursPerPeriod").val();
+			HoursPerPeriod = parseInt(HoursPerPeriod);
+			ConnectPerPeriod = parseInt(ConnectPerPeriod);
+			if ($.trim($('#note').val()).length > 0) {
+				Note = $('#note').val();
+				chrome.storage.local.set({'ConnectPerPeriod':ConnectPerPeriod,'HoursPerPeriod':HoursPerPeriod,'Note':Note});
+			}else{
+				chrome.storage.local.set({'ConnectPerPeriod':ConnectPerPeriod,'HoursPerPeriod':HoursPerPeriod});
+			}
+			Note = $("#note").val();
 			if (ConnectPerPeriod === '' || HoursPerPeriod === '') {
 				alert("Connects and Hours per period must have a value!");
 			}else{
-				HoursPerPeriod = parseInt(HoursPerPeriod);
-				HoursInMs = HoursPerPeriod*60*60;
-				ConnectPerPeriod = parseInt(ConnectPerPeriod);
+				
 				console.log("HoursPerPeriod: "+HoursPerPeriod);
+				console.log("CoonectPerPeriod: "+ConnectPerPeriod);
 				$(this).attr("disabled","disabled");
 				$("#btnStop").removeAttr("disabled");
 				connectFromSearchPage();
@@ -82,7 +96,7 @@ $(document).ready(function(){
 		$("#btnStop").click(function(){
 			$("#btnStart").removeAttr("disabled");
 			$(this).attr("disabled","disabled");
-			chrome.storage.local.set({'ConnectCount':0, 'Status':'false'});
+			chrome.storage.local.set({'ConnectCount':0, 'Status':'false'});//
 			ConnectCount = 0;
 			clearInterval(ConnectPageInterval);
 			console.log("canceled");
@@ -96,11 +110,11 @@ $(document).ready(function(){
 		switch(name){
 			case "InvitedTotal":
 		        var total = 0;
-		        chrome.storage.local.get('InvitedTotal',function(data){
-		          total = value + parseInt(data.InvitedTotal);
-		          chrome.storage.local.set({'InvitedTotal':total},function(){
-		          });
-		          $("#TotalInvited").text(total);
+				chrome.storage.local.get('InvitedTotal',function(data){
+					total = value + parseInt(data.InvitedTotal);
+					chrome.storage.local.set({'InvitedTotal':total},function(){
+					});
+					$("#TotalInvited").text(total);
 		        });
 			break;
 			case "ConnectCount":
@@ -109,7 +123,7 @@ $(document).ready(function(){
 		          	total = value + parseInt(data.ConnectCount);
 		          	chrome.storage.local.set({'ConnectCount':total});
 		          	$("#CurrentPeriodConnect").text(total);
-
+					console.log("update values total: "+total);
 		        });
 			break;
 			case "nextPage":
@@ -143,32 +157,32 @@ $(document).ready(function(){
 		}else{
 			$("#Status").text("Finished").css("color","#fbbc05");
 			alert("Task Completed!");
-			// $("#btnStop").click();
+			$("#btnStop").click();
 		}
 	}
 
 	function standBy(){
 		console.log("standBy called");
-		chrome.storage.local.set({'lastPage':window.location.href});
+		chrome.storage.local.set({'LastPage':window.location.href});
 		$("#nextPeriodWrap").show();
 	    $("#Status").text("Waiting for the next period").css("color","#aa0000"); //change the status display
 	    $("#nextPeriodCount").countdowntimer({
-	      hours:HoursPerPeriod,
-	      timeUp: function(){
-	        console.log("Moving to next period.");
-	        $("#nextPeriodWrap").hide();
-	        $("#Status").text("Connecting new contacts..").css("color","#0000aa");
-	        chrome.storage.local.set({'ConnectCount':0,'Status':'continue'});
-	        ConnectCount = 0;
-	        window.location.reload();
-	      }
+	      	hours:HoursPerPeriod,
+	      	timeUp: function(){
+	        	console.log("Moving to next period.");
+	        	$("#nextPeriodWrap").hide();
+	        	$("#Status").text("Connecting new contacts..").css("color","#0000aa");
+	        	chrome.storage.local.set({'ConnectCount':0,'Status':'continue'});
+	        	ConnectCount = 0;
+	        	window.location.reload();
+	      	}
 	    });
 	}
 
 	function navigateToLastPage(){
-		chrome.storage.local.get('lastPage',function(data){
-			console.log("lastPage: "+data.lastPage);
-			window.location = data.lastPage;
+		chrome.storage.local.get('LastPage',function(data){
+			console.log("LastPage: "+data.LastPage);
+			window.location = data.LastPage;
 		});
 	}
 
@@ -180,6 +194,7 @@ $(document).ready(function(){
 		   setTimeout(function(){
 		   	var connectElements = $(".search-result__actions--primary:contains('Connect')");
 		    console.log("total connect button found: "+ connectElements.length);
+		    console.log("ConnectPerPeriod: "+ConnectPerPeriod);
 		    var index = 0;
 		    if (connectElements.length > 0) {
 			    ConnectPageInterval = setInterval(function(){
@@ -192,8 +207,17 @@ $(document).ready(function(){
 				    		$('html, body').animate({
 					        	scrollTop: $(connectElements.get(index)).offset().top
 					    	}, 300);
-					    	// connectElements.get(index).click();
-					    	// $(".button-primary-large").click();
+					    	connectElements.get(index).click();
+					    	if ($.trim($('#note').val()).length < 1) {
+					    		console.log("empty note!");
+					    		$(".button-primary-large").click();
+					    	}else{
+					    		console.log("found note!"+$.trim($('#note').val()).length);
+					    		$(".send-invite__actions > .button-secondary-large").click();
+					    		$("#custom-message").val(Note);
+					    		$(".send-invite__actions > .button-primary-large").click();
+					    	}
+					    	
 					    	ConnectCount ++;
 					    	clearInterval(ConnectPageInterval);
 					    	console.log("interval cleared!");
@@ -210,8 +234,17 @@ $(document).ready(function(){
 				    		$('html, body').animate({
 					        	scrollTop: $(connectElements.get(index)).offset().top
 					    	}, 300);
-					    	// connectElements.get(index).click();
-					    	// $(".button-primary-large").click();
+					    	connectElements.get(index).click();
+					    	if ($.trim($('#note').val()).length < 1) {
+					    		console.log("empty note!");
+					    		$(".button-primary-large").click();
+
+					    	}else{
+					    		console.log("found note!"+$.trim($('#note').val()).length);
+					    		$(".send-invite__actions > .button-secondary-large").click();
+					    		$("#custom-message").val(Note);
+					    		$(".send-invite__actions > .button-primary-large").click();
+					    	}
 					    	ConnectCount ++;
 					    	console.log("index: "+index);
 					    	updateValues('InvitedTotal',1);
