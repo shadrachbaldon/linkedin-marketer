@@ -1,50 +1,63 @@
 <div style="width: 300px;position: fixed; bottom: 0; right: 0;padding:20px;z-index: 9999999;background-color: #fff">
-    
-    <div class="row">
-      <div class="col s12">
-        <p class="flow-text">Total Invite: <span id="TotalInvited">0</span></p>
-        <p class="flow-text">Current Period Invite: <span id="CurrentPeriodConnect">0</span></p>
-        <p class="flow-text">Status: <span id="Status" style="color:#cc0000">Initializing</span></p>
+    <select name="endMonth" id="moduleSelector" class="ember-view">
+      <option value="1">Connect new contacts</option> 
+      <option value="2">Broadcast Message</option>
+    </select>
+    <p class="flow-text">Status: <span id="Status" style="color:#cc0000">Initializing</span></p>
+    <hr>
+    <div id="connectNewContacts">
+      <div class="row">
+        <div class="col s12">
+          <p class="flow-text">Total Invite: <span id="TotalInvited">0</span></p>
+          <p class="flow-text">Current Period Invite: <span id="CurrentPeriodConnect">0</span></p>
+        </div>
+      </div>
+      <div class="row" id="nextPeriodWrap" style="display: none">
+        <div class="col s12">
+          <p class="flow-text">Next Period: <span id="nextPeriodCount">00:00:00</span></p>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col s6">
+          <div class="input-field">
+            <label for="ConnectsPerPeriod">Connects per period</label>
+            <input type="number" id="ConnectsPerPeriod" min="1">
+          </div>
+        </div>
+        <div class="col s6">
+          <div class="input-field">
+            <label for="HoursPerPeriod">Hours per period</label>
+            <input type="number" id="HoursPerPeriod" min="1">
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col s12">
+          <div class="input-field">
+            <label for="note">Invitation Note (Optional)</label>
+            <textarea id="note" class="materialize-textarea"  data-length="300"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col s6">
+          <div class="input-field">
+            <button class="premium-btn btn" id="btnStart" disabled>Start</button>
+            <button class="premium-btn btn" id="btnStop" disabled>Cancel</button>
+          </div>
+        </div>
+        <div class="col s6">
+          <div class="input-field">
+            
+          </div>
+        </div>
       </div>
     </div>
-    <div class="row" id="nextPeriodWrap" style="display: none">
-      <div class="col s12">
-        <p class="flow-text">Next Period: <span id="nextPeriodCount">00:00:00</span></p>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col s6">
-        <div class="input-field">
-          <label for="ConnectsPerPeriod">Connects per period</label>
-          <input type="number" id="ConnectsPerPeriod" min="1">
-        </div>
-      </div>
-      <div class="col s6">
-        <div class="input-field">
-          <label for="HoursPerPeriod">Hours per period</label>
-          <input type="number" id="HoursPerPeriod" min="1">
-        </div>
-      </div>    
-    </div>
-    <div class="row">
-      <div class="col s12">
-        <div class="input-field">
-          <label for="note">Invitation Note (Optional)</label>
-          <textarea id="note" class="materialize-textarea"  data-length="300"></textarea>
-        </div>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col s6">
-        <div class="input-field">
-          <button class="premium-btn btn" id="btnStart" disabled>Start</button>
-          <button class="premium-btn btn" id="btnStop" disabled>Cancel</button>
-        </div>
-      </div>
-      <div class="col s6">
-        <div class="input-field">
-          
-        </div>
-      </div>
+
+    <div id="broadcastMessage" style="display:none;">
+      <label for="note">Message to broadcast</label>
+      <textarea id="note" class="materialize-textarea"></textarea>
+      <button class="premium-btn btn" id="btnStartMsg" disabled>Start</button>
+      <button class="premium-btn btn" id="btnStopMsg" disabled>Cancel</button>
     </div>
 </div>

@@ -42,7 +42,6 @@ $(document).ready(function(){
 	});
 
 	setTimeout(function(){
-		
 		console.log("ConnectPerPeriod: "+ ConnectPerPeriod);
 		if (Status === "continue") {
 			chrome.storage.local.get(['ConnectPerPeriod','HoursPerPeriod','Note'],function(data){
@@ -84,10 +83,10 @@ $(document).ready(function(){
 			if (ConnectPerPeriod === '' || HoursPerPeriod === '') {
 				alert("Connects and Hours per period must have a value!");
 			}else{
-				
 				console.log("HoursPerPeriod: "+HoursPerPeriod);
 				console.log("CoonectPerPeriod: "+ConnectPerPeriod);
 				$(this).attr("disabled","disabled");
+				$("#moduleSelector").attr("disabled","disabled");
 				$("#btnStop").removeAttr("disabled");
 				connectFromSearchPage();
 			}
@@ -95,13 +94,39 @@ $(document).ready(function(){
 		});
 		$("#btnStop").click(function(){
 			$("#btnStart").removeAttr("disabled");
+			$("#moduleSelector").removeAttr("disabled");
 			$(this).attr("disabled","disabled");
-			chrome.storage.local.set({'ConnectCount':0, 'Status':'false'});//
+			chrome.storage.local.set({'ConnectCount':0, 'Status':'false'});
 			ConnectCount = 0;
 			clearInterval(ConnectPageInterval);
 			console.log("canceled");
 			window.location.reload();
 		});
+
+		// broadcast message scripts starts here
+		$("#moduleSelector").change(function(){
+			if ($("#moduleSelector").val() === '1') {
+				$("#connectNewContacts").show();
+				$("#broadcastMessage").hide();
+				console.log("1:"+$("#moduleSelector").val());
+			} else {
+				$("#connectNewContacts").hide();
+				$("#broadcastMessage").show();
+				console.log("2:"+$("#moduleSelector").val());
+			}
+		});
+		$("#btnStartMsg").removeAttr("disabled");
+
+		$("#btnStartMsg").click(function(){
+			$(this).attr("disabled","disabled");
+			$("#btnStopMsg").removeAttr("disabled");
+		});
+
+		$("#btnStopMsg").click(function(){
+			$(this).attr("disabled","disabled");
+			$("#btnStartMsg").removeAttr("disabled");
+		});
+
 	},5000);
 	
 	
