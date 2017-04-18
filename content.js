@@ -7,11 +7,15 @@ $(document).ready(function(){
 	});
 	// chrome.storage.local.clear();
 	// global vars
-	var ConnectPageInterval,PeriodInterval,Status,InvitedTotal,Page,ConnectPerPeriod,HoursPerPeriod,Note;
+	var ConnectPageInterval,Status,InvitedTotal,ConnectPerPeriod,HoursPerPeriod,Note;
 	var ConnectCount = 0;
+
+	var MessagePageInterval, MessageSentTotal, MessagePerPeriod, MessageHoursPerPeriod, Message;
+	var MessageCount = 0;
 	// initialize values
-	chrome.storage.local.get(['InvitedTotal','ConnectCount','Status'], function(data) {
+	chrome.storage.local.get(null, function(data) {
 		console.log("initialize variables");
+
 		if (typeof data.InvitedTotal === 'undefined') {
 			console.log("no value");
 			chrome.storage.local.set({'InvitedTotal': 0}, function() {
@@ -43,7 +47,7 @@ $(document).ready(function(){
 
 	setTimeout(function(){
 		console.log("ConnectPerPeriod: "+ ConnectPerPeriod);
-		if (Status === "continue") {
+		if (Status === "continueConnect") {
 			chrome.storage.local.get(['ConnectPerPeriod','HoursPerPeriod','Note'],function(data){
 				
 				if (typeof data.Note === 'undefined') {
@@ -62,37 +66,61 @@ $(document).ready(function(){
 			$("#btnStart").attr("disabled","disabled");
 			$("#btnStop").removeAttr("disabled");
 			connectFromSearchPage();
+		}
+		else if(Status === "continueMessage"){
+			chrome.storage.local.get(['MessagePerPeriod','MessageHoursPerPeriod','Message'],function(data){
+				
+				if (typeof data.Note === 'undefined') {
+					$("#MessagePerPeriod").val(data.MessagePerPeriod);
+					$("#HoursPerPeriod").val(data.MessageHoursPerPeriod);
+					MessageHoursPerPeriod = parseInt(data.MessageHoursPerPeriod);
+					MessagePerPeriod = parseInt(data.MessagePerPeriod);
+				}else{
+					$("#MessagePerPeriod").val(data.MessagePerPeriod);
+					$("#MessageHoursPerPeriod").val(data.MessageHoursPerPeriod);
+					$("#message").val(data.Message);
+					MessageHoursPerPeriod = parseInt(data.MessageHoursPerPeriod);
+					MessagePerPeriod = parseInt(data.MessagePerPeriod);
+				}
+			});
+			$("#btnStartMsg").attr("disabled","disabled");
+			$("#btnStopMsg").removeAttr("disabled");
+			SendMessageFromSearchPage();
 		}else{
 			$("#Status").text("Ready").css("color","#00aa00");
 			$("#btnStart").removeAttr("disabled");
 		}
+		
 		$("#TotalInvited").text(InvitedTotal);
 		$("#CurrentPeriodConnect").text(ConnectCount);
+
 		$("#btnStart").click(function(){
 			ConnectPerPeriod = $("#ConnectsPerPeriod").val();
 			HoursPerPeriod = $("#HoursPerPeriod").val();
-			HoursPerPeriod = parseInt(HoursPerPeriod);
-			ConnectPerPeriod = parseInt(ConnectPerPeriod);
+			// check if there is a note
 			if ($.trim($('#note').val()).length > 0) {
 				Note = $('#note').val();
-				chrome.storage.local.set({'ConnectPerPeriod':ConnectPerPeriod,'HoursPerPeriod':HoursPerPeriod,'Note':Note});
-			}else{
-				chrome.storage.local.set({'ConnectPerPeriod':ConnectPerPeriod,'HoursPerPeriod':HoursPerPeriod});
+				chrome.storage.local.set({'Note':Note});
 			}
-			Note = $("#note").val();
+			// check if connect per period and hours per period is empty
 			if (ConnectPerPeriod === '' || HoursPerPeriod === '') {
 				alert("Connects and Hours per period must have a value!");
 			}else{
+				// if connect per period and hours per period is not empty
 				console.log("HoursPerPeriod: "+HoursPerPeriod);
 				console.log("CoonectPerPeriod: "+ConnectPerPeriod);
 				$(this).attr("disabled","disabled");
 				$("#moduleSelector").attr("disabled","disabled");
 				$("#btnStop").removeAttr("disabled");
+				HoursPerPeriod = parseInt(HoursPerPeriod);
+				ConnectPerPeriod = parseInt(ConnectPerPeriod);
+				chrome.storage.local.set({'ConnectPerPeriod':ConnectPerPeriod,'HoursPerPeriod':HoursPerPeriod});
 				connectFromSearchPage();
 			}
 			
 		});
 		$("#btnStop").click(function(){
+			// executes when cancel button is clicked
 			$("#btnStart").removeAttr("disabled");
 			$("#moduleSelector").removeAttr("disabled");
 			$(this).attr("disabled","disabled");
@@ -103,28 +131,46 @@ $(document).ready(function(){
 			window.location.reload();
 		});
 
-		// broadcast message scripts starts here
+		// broadcast message main control scripts starts here
 		$("#moduleSelector").change(function(){
 			if ($("#moduleSelector").val() === '1') {
 				$("#connectNewContacts").show();
 				$("#broadcastMessage").hide();
-				console.log("1:"+$("#moduleSelector").val());
 			} else {
 				$("#connectNewContacts").hide();
 				$("#broadcastMessage").show();
-				console.log("2:"+$("#moduleSelector").val());
 			}
 		});
 		$("#btnStartMsg").removeAttr("disabled");
 
 		$("#btnStartMsg").click(function(){
-			$(this).attr("disabled","disabled");
-			$("#btnStopMsg").removeAttr("disabled");
+			MessagePerPeriod = $("#MessagePerPeriod").val();
+			MessageHoursPerPeriod = $("#MessageHoursPerPeriod").val();
+			MessageHoursPerPeriod = parseInt(MessageHoursPerPeriod);
+			MessagePerPeriod = parseInt(MessagePerPeriod);
+			if (MessagePerPeriod === '' || MessageHoursPerPeriod === '' || $.trim($('#message').val()).length === 0) {
+				alert("All fields must have a value!");
+			}else{
+				console.log("HoursPerPeriod: "+HoursPerPeriod);
+				console.log("CoonectPerPeriod: "+ConnectPerPeriod);
+				Message = $('#message').val();
+				chrome.storage.local.set({'MessagePerPeriod':MessagePerPeriod,'MessageHoursPerPeriod':MessageHoursPerPeriod,'Message':Message});
+				$(this).attr("disabled","disabled");
+				$("#moduleSelector").attr("disabled","disabled");
+				$("#btnStop").removeAttr("disabled");
+				SendMessageFromSearchPage();
+			}
+
 		});
 
 		$("#btnStopMsg").click(function(){
 			$(this).attr("disabled","disabled");
 			$("#btnStartMsg").removeAttr("disabled");
+			chrome.storage.local.set({'MessageCount':0, 'Status':'false'});
+			// clearInterval(MessagePageInterval);
+			console.log("canceled");
+			window.location.reload();
+
 		});
 
 	},5000);
@@ -186,19 +232,24 @@ $(document).ready(function(){
 		}
 	}
 
-	function standBy(){
+	function standBy(fromModule){
 		console.log("standBy called");
 		chrome.storage.local.set({'LastPage':window.location.href});
 		$("#nextPeriodWrap").show();
 	    $("#Status").text("Waiting for the next period").css("color","#aa0000"); //change the status display
 	    $("#nextPeriodCount").countdowntimer({
-	      	hours:HoursPerPeriod,
+	      	seconds:HoursPerPeriod,
 	      	timeUp: function(){
 	        	console.log("Moving to next period.");
 	        	$("#nextPeriodWrap").hide();
-	        	$("#Status").text("Connecting new contacts..").css("color","#0000aa");
-	        	chrome.storage.local.set({'ConnectCount':0,'Status':'continue'});
-	        	ConnectCount = 0;
+	        	if (fromModule === 'connect') {
+	        		$("#Status").text("Connecting new contacts..").css("color","#0000aa");
+		        	chrome.storage.local.set({'ConnectCount':0,'Status':'continueConnect'});
+	        	}
+		        else{
+		        	$("#Status").text("Connecting new contacts..").css("color","#0000aa");
+		        	chrome.storage.local.set({'MessageCount':0,'Status':'continueMessage'});
+		        }
 	        	window.location.reload();
 	      	}
 	    });
@@ -226,7 +277,7 @@ $(document).ready(function(){
 			    	if (ConnectCount >= ConnectPerPeriod) { //make this dynamic
 			    		clearInterval(ConnectPageInterval);
 			    		console.log("stopped! limit reached");
-			    		standBy();
+			    		standBy('connect');
 			    	}else{
 			    		if (index == connectElements.length-1) {
 				    		$('html, body').animate({

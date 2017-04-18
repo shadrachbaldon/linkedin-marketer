@@ -118,14 +118,10 @@
 //   });
 // });
 
-// $("#btnClear").click(function(){
-//   chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-//     chrome.tabs.sendMessage(tabs[0].id, {action: "clear"}, function(response) {
-//       console.log("Storage Cleared!");
-//       chrome.storage.local.set({'InvitedTotal':0,'ConnectCount':0,'Page':1});
-//     });
-//   });
-// });
+$("#btnClear").click(function(){
+  chrome.storage.local.clear();
+  console.log("cleared");
+});
 
 // $("#btnDisplay").click(function(){
 //   chrome.storage.local.get(['InvitedTotal','ConnectCount','Page'],function(data){

@@ -4,17 +4,17 @@
       <option value="2">Broadcast Message</option>
     </select>
     <p class="flow-text">Status: <span id="Status" style="color:#cc0000">Initializing</span></p>
+    <div class="row" id="nextPeriodWrap" style="display: none">
+      <div class="col s12">
+        <p class="flow-text">Next Period: <span id="nextPeriodCount">00:00:00</span></p>
+      </div>
+    </div>
     <hr>
     <div id="connectNewContacts">
       <div class="row">
         <div class="col s12">
           <p class="flow-text">Total Invite: <span id="TotalInvited">0</span></p>
           <p class="flow-text">Current Period Invite: <span id="CurrentPeriodConnect">0</span></p>
-        </div>
-      </div>
-      <div class="row" id="nextPeriodWrap" style="display: none">
-        <div class="col s12">
-          <p class="flow-text">Next Period: <span id="nextPeriodCount">00:00:00</span></p>
         </div>
       </div>
       <div class="row">
@@ -55,8 +55,30 @@
     </div>
 
     <div id="broadcastMessage" style="display:none;">
-      <label for="note">Message to broadcast</label>
-      <textarea id="note" class="materialize-textarea"></textarea>
+      <div class="row">
+        <div class="col s12">
+          <p class="flow-text">Total Sent: <span id="TotalSent">0</span></p>
+          <p class="flow-text">Current Period Sent: <span id="CurrentPeriodSent">0</span></p>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col s6">
+          <div class="input-field">
+            <label for="MessagePerPeriod">Connects per period</label>
+            <input type="number" id="MessagePerPeriod" min="1">
+          </div>
+        </div>
+        <div class="col s6">
+          <div class="input-field">
+            <label for="MessageHoursPerPeriod">Hours per period</label>
+            <input type="number" id="MessageHoursPerPeriod" min="1">
+          </div>
+        </div>
+      </div>
+
+      <label for="message">Message to broadcast</label>
+      <textarea id="message" class="materialize-textarea"></textarea>
       <button class="premium-btn btn" id="btnStartMsg" disabled>Start</button>
       <button class="premium-btn btn" id="btnStopMsg" disabled>Cancel</button>
     </div>
