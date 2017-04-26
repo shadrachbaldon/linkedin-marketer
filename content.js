@@ -42,6 +42,22 @@ $(document).ready(function(){
 			console.log("Status: "+data.Status);
 			Status = data.Status;
 		}
+		if (typeof data.MessageSentTotal === 'undefined') {
+			console.log("no value");
+			chrome.storage.local.set({'MessageSentTotal': 0});
+			MessageSentTotal = 0;
+		}else{
+			console.log("Data MessageSentTotal: "+data.MessageSentTotal);
+			MessageSentTotal = data.MessageSentTotal;
+		}
+		if (typeof data.MessageCount === 'undefined') {
+			console.log("no value");
+			chrome.storage.local.set({'MessageCount': 0});
+			MessageCount = 0;
+		}else{
+			console.log("Data MessageCount: "+data.MessageCount);
+			MessageCount = data.MessageCount;
+		}
 		console.log('Settings saved');
 	});
 
@@ -68,24 +84,24 @@ $(document).ready(function(){
 			connectFromSearchPage();
 		}
 		else if(Status === "continueMessage"){
+			$("#moduleSelector").val("2");
+			$("#connectNewContacts").hide();
+			$("#broadcastMessage").show();
 			chrome.storage.local.get(['MessagePerPeriod','MessageHoursPerPeriod','Message'],function(data){
 				
-				if (typeof data.Note === 'undefined') {
-					$("#MessagePerPeriod").val(data.MessagePerPeriod);
-					$("#HoursPerPeriod").val(data.MessageHoursPerPeriod);
-					MessageHoursPerPeriod = parseInt(data.MessageHoursPerPeriod);
-					MessagePerPeriod = parseInt(data.MessagePerPeriod);
-				}else{
-					$("#MessagePerPeriod").val(data.MessagePerPeriod);
-					$("#MessageHoursPerPeriod").val(data.MessageHoursPerPeriod);
-					$("#message").val(data.Message);
-					MessageHoursPerPeriod = parseInt(data.MessageHoursPerPeriod);
-					MessagePerPeriod = parseInt(data.MessagePerPeriod);
-				}
+				$("#MessagePerPeriod").val(data.MessagePerPeriod);
+				$("#MessageHoursPerPeriod").val(data.MessageHoursPerPeriod);
+				$("#message").val(data.Message);
+				MessageHoursPerPeriod = parseInt(data.MessageHoursPerPeriod);
+				MessagePerPeriod = parseInt(data.MessagePerPeriod);
+				Message = data.Message;
+				console.log("===Continue MessageHoursPerPeriod: "+ data.MessageHoursPerPeriod);
+				console.log("===Continue MessagePerPeriod: "+ data.MessagePerPeriod);
+				console.log("===Continue Message: "+ data.Message);
 			});
 			$("#btnStartMsg").attr("disabled","disabled");
 			$("#btnStopMsg").removeAttr("disabled");
-			SendMessageFromSearchPage();
+			SendMessageFromSearchPage(0);
 		}else{
 			$("#Status").text("Ready").css("color","#00aa00");
 			$("#btnStart").removeAttr("disabled");
@@ -93,6 +109,9 @@ $(document).ready(function(){
 		
 		$("#TotalInvited").text(InvitedTotal);
 		$("#CurrentPeriodConnect").text(ConnectCount);
+
+		$("#TotalSent").text(MessageSentTotal);
+		$("#CurrentPeriodSent").text(MessageCount);
 
 		$("#btnStart").click(function(){
 			ConnectPerPeriod = $("#ConnectsPerPeriod").val();
@@ -107,8 +126,8 @@ $(document).ready(function(){
 				alert("Connects and Hours per period must have a value!");
 			}else{
 				// if connect per period and hours per period is not empty
-				console.log("HoursPerPeriod: "+HoursPerPeriod);
-				console.log("CoonectPerPeriod: "+ConnectPerPeriod);
+				// console.log("HoursPerPeriod: "+HoursPerPeriod);
+				// console.log("CoonectPerPeriod: "+ConnectPerPeriod);
 				$(this).attr("disabled","disabled");
 				$("#moduleSelector").attr("disabled","disabled");
 				$("#btnStop").removeAttr("disabled");
@@ -151,14 +170,14 @@ $(document).ready(function(){
 			if (MessagePerPeriod === '' || MessageHoursPerPeriod === '' || $.trim($('#message').val()).length === 0) {
 				alert("All fields must have a value!");
 			}else{
-				console.log("HoursPerPeriod: "+HoursPerPeriod);
-				console.log("CoonectPerPeriod: "+ConnectPerPeriod);
+				console.log("MessageHoursPerPeriod: "+MessageHoursPerPeriod);
+				console.log("MessagePerPeriod: "+MessagePerPeriod);
 				Message = $('#message').val();
 				chrome.storage.local.set({'MessagePerPeriod':MessagePerPeriod,'MessageHoursPerPeriod':MessageHoursPerPeriod,'Message':Message});
 				$(this).attr("disabled","disabled");
 				$("#moduleSelector").attr("disabled","disabled");
-				$("#btnStop").removeAttr("disabled");
-				SendMessageFromSearchPage();
+				$("#btnStopMsg").removeAttr("disabled");
+				SendMessageFromSearchPage(0);
 			}
 
 		});
@@ -167,7 +186,7 @@ $(document).ready(function(){
 			$(this).attr("disabled","disabled");
 			$("#btnStartMsg").removeAttr("disabled");
 			chrome.storage.local.set({'MessageCount':0, 'Status':'false'});
-			// clearInterval(MessagePageInterval);
+			clearInterval(MessagePageInterval);
 			console.log("canceled");
 			window.location.reload();
 
@@ -177,7 +196,7 @@ $(document).ready(function(){
 	
 	
 	function updateValues(name, value){
-		console.log("updateValues called");
+		// console.log("updateValues called");
 		switch(name){
 			case "InvitedTotal":
 		        var total = 0;
@@ -194,7 +213,7 @@ $(document).ready(function(){
 		          	total = value + parseInt(data.ConnectCount);
 		          	chrome.storage.local.set({'ConnectCount':total});
 		          	$("#CurrentPeriodConnect").text(total);
-					console.log("update values total: "+total);
+					// console.log("update values total: "+total);
 		        });
 			break;
 			case "nextPage":
@@ -209,6 +228,24 @@ $(document).ready(function(){
 			case "LastPage":
 				chrome.storage.local.set({'LastPage':value});
 			break;
+			case "MessageSentTotal":
+				var total = 0;
+				chrome.storage.local.get('MessageSentTotal',function(data){
+					total = value + parseInt(data.MessageSentTotal);
+					chrome.storage.local.set({'MessageSentTotal':total},function(){
+					});
+					$("#TotalSent").text(total);
+		        });
+			break;
+			case "MessageCount":
+				var total = 0;
+		        chrome.storage.local.get('MessageCount',function(data){
+		          	total = value + parseInt(data.MessageCount);
+		          	chrome.storage.local.set({'MessageCount':total});
+		          	$("#CurrentPeriodSent").text(total);
+					// console.log("update values total: "+total);
+		        });
+			break;
 		}
 	}
 
@@ -218,10 +255,10 @@ $(document).ready(function(){
 		if (url.search("page=") >= 0) {
 			page = url.substring(url.search("page=")+5, url.length);
 			page = parseInt(page);
-			console.log(page);
+			// console.log(page);
 		}else{
 			page = 1
-			console.log("1");
+			// console.log("1");
 		}
 		if (page < 100) {
 			$("button.next").click();
@@ -232,32 +269,41 @@ $(document).ready(function(){
 		}
 	}
 
-	function standBy(fromModule){
-		console.log("standBy called");
+	function standBy(fromModule,index){
+		// console.log("standBy called");
 		chrome.storage.local.set({'LastPage':window.location.href});
 		$("#nextPeriodWrap").show();
 	    $("#Status").text("Waiting for the next period").css("color","#aa0000"); //change the status display
-	    $("#nextPeriodCount").countdowntimer({
-	      	seconds:HoursPerPeriod,
-	      	timeUp: function(){
-	        	console.log("Moving to next period.");
-	        	$("#nextPeriodWrap").hide();
-	        	if (fromModule === 'connect') {
+	    if (fromModule === 'connect') {
+		    $("#nextPeriodCount").countdowntimer({
+		      	hours:HoursPerPeriod,
+		      	timeUp: function(){
+		        	// console.log("Moving to next period.");
+		        	$("#nextPeriodWrap").hide();
 	        		$("#Status").text("Connecting new contacts..").css("color","#0000aa");
 		        	chrome.storage.local.set({'ConnectCount':0,'Status':'continueConnect'});
-	        	}
-		        else{
-		        	$("#Status").text("Connecting new contacts..").css("color","#0000aa");
+		        	window.location.reload();
+		      	}
+		    });
+		}else{
+			$("#nextPeriodCount").countdowntimer({
+		      	seconds:MessageHoursPerPeriod,
+		      	timeUp: function(){
+		        	// console.log("Moving to next period.");
+		        	$("#nextPeriodWrap").hide();
+		        	$("#Status").text("Sending message..").css("color","#0000aa");
 		        	chrome.storage.local.set({'MessageCount':0,'Status':'continueMessage'});
-		        }
-	        	window.location.reload();
-	      	}
-	    });
+		        	MessageCount = 0;
+		        	$("#CurrentPeriodSent").text("0");
+		        	SendMessageFromSearchPage(index);
+		      	}
+		    });
+		}
 	}
 
 	function navigateToLastPage(){
 		chrome.storage.local.get('LastPage',function(data){
-			console.log("LastPage: "+data.LastPage);
+			// console.log("LastPage: "+data.LastPage);
 			window.location = data.LastPage;
 		});
 	}
@@ -269,15 +315,15 @@ $(document).ready(function(){
 		   }, 3000);
 		   setTimeout(function(){
 		   	var connectElements = $(".search-result__actions--primary:contains('Connect')");
-		    console.log("total connect button found: "+ connectElements.length);
+		    // console.log("total connect button found: "+ connectElements.length);
 		    console.log("ConnectPerPeriod: "+ConnectPerPeriod);
-		    var index = 0;
+			var index = 0;
 		    if (connectElements.length > 0) {
 			    ConnectPageInterval = setInterval(function(){
 			    	if (ConnectCount >= ConnectPerPeriod) { //make this dynamic
 			    		clearInterval(ConnectPageInterval);
 			    		console.log("stopped! limit reached");
-			    		standBy('connect');
+			    		standBy('connect',index);
 			    	}else{
 			    		if (index == connectElements.length-1) {
 				    		$('html, body').animate({
@@ -338,4 +384,66 @@ $(document).ready(function(){
 		   },3000);
 	}
 
+	function SendMessageFromSearchPage(index){
+		console.log("index: "+index);
+		$("#Status").text("Sending message...").css("color","#0000aa");
+		$('html, body').animate({
+		   	scrollTop: 1000
+		}, 3000);
+		setTimeout(function(){
+		   	var msgElements = $(".search-result__actions--primary:contains('Message')"); 
+			// alert("Found "+msgElements.length+" buttons");
+			// var index = 0;
+		    if (msgElements.length > 0) {
+		    	MessagePageInterval = setInterval(function(){
+		    		if (MessageCount >= MessagePerPeriod) { //make this dynamic
+			    		clearInterval(MessagePageInterval);
+			    		// console.log("stopped! limit reached");
+			    		standBy('message',index);
+			    	}else{
+			    		if (index == msgElements.length-1) {
+				    		$('html, body').animate({
+					        	scrollTop: $(msgElements.get(index)).offset().top
+					    	}, 300);
+					    	msgElements.get(index).click();
+					    	$(".msg-messaging-form__message").val(Message);
+					    	// $(".msg-messaging-form__send-button").click();
+					    	// setTimeout(function(){
+					    	// 	$(".msg-overlay-bubble-header__control--close-btn").click();
+					    	// },2000);
+					    	MessageCount ++;
+					    	clearInterval(MessagePageInterval);
+					    	// console.log("interval cleared!");
+					    	// console.log("index: "+index);
+					    	updateValues('MessageSentTotal',1);
+					    	updateValues('MessageCount',1);
+					    	nextPage();
+					    	index = 0;
+					    	setTimeout(function(){
+					    		// waits 3 seconds before continuing to make sure next page elements was loaded
+					    		SendMessageFromSearchPage(index);
+					    	},3000);
+				    	}else{
+				    		$('html, body').animate({
+					        	scrollTop: $(msgElements.get(index)).offset().top
+					    	}, 300);
+					    	msgElements.get(index).click();
+					    	$(".msg-messaging-form__message").val(Message);
+					    	// $(".msg-messaging-form__send-button").click();
+					    	// setTimeout(function(){
+					    	// 	$(".msg-overlay-bubble-header__control--close-btn").click();
+					    	// },2000);
+					    	MessageCount ++;
+					    	// console.log("index: "+index);
+					    	updateValues('MessageSentTotal',1);
+					    	updateValues('MessageCount',1);
+					    	index ++;
+				    	}
+			    	}
+			    	// console.log("Message Count: "+ MessageCount);
+		    	},2000);
+		    }
+
+		},3000);
+	}
 });
