@@ -277,6 +277,7 @@ $(document).ready(function(){
 	    if (fromModule === 'connect') {
 		    $("#nextPeriodCount").countdowntimer({
 		      	hours:HoursPerPeriod,
+		      	stopButton : "btnStop",
 		      	timeUp: function(){
 		        	// console.log("Moving to next period.");
 		        	$("#nextPeriodWrap").hide();
@@ -288,6 +289,7 @@ $(document).ready(function(){
 		}else{
 			$("#nextPeriodCount").countdowntimer({
 		      	seconds:MessageHoursPerPeriod,
+		      	stopButton : "btnStopMsg",
 		      	timeUp: function(){
 		        	// console.log("Moving to next period.");
 		        	$("#nextPeriodWrap").hide();
@@ -303,7 +305,6 @@ $(document).ready(function(){
 
 	function navigateToLastPage(){
 		chrome.storage.local.get('LastPage',function(data){
-			// console.log("LastPage: "+data.LastPage);
 			window.location = data.LastPage;
 		});
 	}
@@ -315,7 +316,6 @@ $(document).ready(function(){
 		   }, 3000);
 		   setTimeout(function(){
 		   	var connectElements = $(".search-result__actions--primary:contains('Connect')");
-		    // console.log("total connect button found: "+ connectElements.length);
 		    console.log("ConnectPerPeriod: "+ConnectPerPeriod);
 			var index = 0;
 		    if (connectElements.length > 0) {
@@ -413,8 +413,6 @@ $(document).ready(function(){
 					    	// },2000);
 					    	MessageCount ++;
 					    	clearInterval(MessagePageInterval);
-					    	// console.log("interval cleared!");
-					    	// console.log("index: "+index);
 					    	updateValues('MessageSentTotal',1);
 					    	updateValues('MessageCount',1);
 					    	nextPage();
