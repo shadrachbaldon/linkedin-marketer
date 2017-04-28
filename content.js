@@ -64,6 +64,8 @@ $(document).ready(function(){
 	setTimeout(function(){
 		console.log("ConnectPerPeriod: "+ ConnectPerPeriod);
 		if (Status === "continueConnect") {
+			chrome.storage.local.set({'Status':'false'});
+			$("#moduleSelector").attr("disabled","disabled");
 			chrome.storage.local.get(['ConnectPerPeriod','HoursPerPeriod','Note'],function(data){
 				
 				if (typeof data.Note === 'undefined') {
@@ -87,6 +89,8 @@ $(document).ready(function(){
 			$("#moduleSelector").val("2");
 			$("#connectNewContacts").hide();
 			$("#broadcastMessage").show();
+			$("#moduleSelector").attr("disabled","disabled");
+			chrome.storage.local.set({'Status':'false'});
 			chrome.storage.local.get(['MessagePerPeriod','MessageHoursPerPeriod','Message'],function(data){
 				
 				$("#MessagePerPeriod").val(data.MessagePerPeriod);
