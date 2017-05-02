@@ -5,7 +5,6 @@ $(document).ready(function(){
 	$.get(chrome.extension.getURL('/ui.html'), function(data) {
 	    $(data).appendTo('body');
 	});
-	// chrome.storage.local.clear();
 	// global vars
 	var ConnectPageInterval,Status,InvitedTotal,ConnectPerPeriod,HoursPerPeriod,Note;
 	var ConnectCount = 0;
@@ -130,8 +129,6 @@ $(document).ready(function(){
 				alert("Connects and Hours per period must have a value!");
 			}else{
 				// if connect per period and hours per period is not empty
-				// console.log("HoursPerPeriod: "+HoursPerPeriod);
-				// console.log("CoonectPerPeriod: "+ConnectPerPeriod);
 				$(this).attr("disabled","disabled");
 				$("#moduleSelector").attr("disabled","disabled");
 				$("#btnStop").removeAttr("disabled");
@@ -253,7 +250,7 @@ $(document).ready(function(){
 		}
 	}
 
-	function nextPage(){
+	function nextPage(action){
 		var page;
 		var url = window.location.href;
 		if (url.search("page=") >= 0) {
@@ -264,13 +261,27 @@ $(document).ready(function(){
 			page = 1
 			// console.log("1");
 		}
-		if (page < 100) {
-			$("button.next").click();
-		}else{
-			$("#Status").text("Finished").css("color","#fbbc05");
-			alert("Task Completed!");
-			$("#btnStop").click();
+		switch(action){
+			case 'connect':
+				if (page < 100) {
+					$("button.next").click();
+				}else{
+					$("#Status").text("Finished").css("color","#fbbc05");
+					alert("Task Completed!");
+					$("#btnStop").click();
+				}
+			break;
+			case 'message':
+				if ($(".next-text").length == 0) {
+					$("#Status").text("Finished").css("color","#fbbc05");
+					alert("Task Completed!");
+					$("#btnStopMsg").click();
+				}else{
+					$("button.next").click();
+				}
+			break;
 		}
+				
 	}
 
 	function standBy(fromModule,index){
@@ -313,6 +324,13 @@ $(document).ready(function(){
 		});
 	}
 
+	function getFirstName(index){
+		nameElements = $(".actor-name");
+		var name = nameElements.get(index).textContent
+		var fname = name.substring(0, name.indexOf(" "));
+		return fname;
+	}
+
 	function connectFromSearchPage(){
 		$("#Status").text("Connecting new contacts...").css("color","#0000aa");
 		$('html, body').animate({
@@ -350,7 +368,7 @@ $(document).ready(function(){
 					    	console.log("index: "+index);
 					    	updateValues('InvitedTotal',1);
 					    	updateValues('ConnectCount',1);
-					    	nextPage();
+					    	nextPage('connect');
 					    	index = 0;
 					    	setTimeout(function(){
 					    		// waits 3 seconds before continuing to make sure next page elements was loaded
@@ -396,13 +414,10 @@ $(document).ready(function(){
 		}, 3000);
 		setTimeout(function(){
 		   	var msgElements = $(".search-result__actions--primary:contains('Message')"); 
-			// alert("Found "+msgElements.length+" buttons");
-			// var index = 0;
 		    if (msgElements.length > 0) {
 		    	MessagePageInterval = setInterval(function(){
-		    		if (MessageCount >= MessagePerPeriod) { //make this dynamic
+		    		if (MessageCount >= MessagePerPeriod) {
 			    		clearInterval(MessagePageInterval);
-			    		// console.log("stopped! limit reached");
 			    		standBy('message',index);
 			    	}else{
 			    		if (index == msgElements.length-1) {
@@ -410,16 +425,23 @@ $(document).ready(function(){
 					        	scrollTop: $(msgElements.get(index)).offset().top
 					    	}, 300);
 					    	msgElements.get(index).click();
-					    	$(".msg-messaging-form__message").val(Message);
-					    	// $(".msg-messaging-form__send-button").click();
+					    	var firstname = getFirstName(index);
+					    	var msg = Message.replace("{first name}", "${firstname}");
+					    	msg = eval("`"+msg+"`");
+					    	$(".msg-messaging-form__message:first").val(msg);
+					    	// setTimeout(function(){
+					    		$(".msg-messaging-form__send-button").removeAttr("disabled");
+					    		// $(".msg-messaging-form__send-button").click();
+					    		// $(".msg-messaging-form__send-button").click();
+					    	// },2000);
 					    	// setTimeout(function(){
 					    	// 	$(".msg-overlay-bubble-header__control--close-btn").click();
-					    	// },2000);
+					    	// },5000);
 					    	MessageCount ++;
 					    	clearInterval(MessagePageInterval);
 					    	updateValues('MessageSentTotal',1);
 					    	updateValues('MessageCount',1);
-					    	nextPage();
+					    	nextPage('message');
 					    	index = 0;
 					    	setTimeout(function(){
 					    		// waits 3 seconds before continuing to make sure next page elements was loaded
@@ -430,19 +452,24 @@ $(document).ready(function(){
 					        	scrollTop: $(msgElements.get(index)).offset().top
 					    	}, 300);
 					    	msgElements.get(index).click();
-					    	$(".msg-messaging-form__message").val(Message);
-					    	// $(".msg-messaging-form__send-button").click();
+					    	var firstname = getFirstName(index);
+					    	var msg = Message.replace("{first name}", "${firstname}");
+					    	msg = eval("`"+msg+"`");
+					    	$(".msg-messaging-form__message:first").val(msg);
+					    	// setTimeout(function(){
+					    		$(".msg-messaging-form__send-button").removeAttr("disabled");
+					    		// $(".msg-messaging-form__send-button").click();
+					    		// $(".msg-messaging-form__send-button").click();
+					    	// },2000);
 					    	// setTimeout(function(){
 					    	// 	$(".msg-overlay-bubble-header__control--close-btn").click();
-					    	// },2000);
+					    	// },5000);
 					    	MessageCount ++;
-					    	// console.log("index: "+index);
 					    	updateValues('MessageSentTotal',1);
 					    	updateValues('MessageCount',1);
 					    	index ++;
 				    	}
 			    	}
-			    	// console.log("Message Count: "+ MessageCount);
 		    	},2000);
 		    }
 
