@@ -2,6 +2,7 @@
     <select name="endMonth" id="moduleSelector" class="ember-view">
       <option value="1">Connect new contacts</option> 
       <option value="2">Broadcast Message</option>
+      <option value="3">Extract Emails</option>
     </select>
     <p class="flow-text">Status: <span id="Status" style="color:#cc0000">Initializing</span></p>
     <div class="row" id="nextPeriodWrap" style="display: none">
@@ -81,5 +82,31 @@
       <textarea id="message" class="materialize-textarea"></textarea>
       <button class="premium-btn btn" id="btnStartMsg" disabled>Start</button>
       <button class="premium-btn btn" id="btnStopMsg" disabled>Cancel</button>
+    </div>
+
+    <div id="extractEmails" style="display:none;">
+      <div class="row">
+        <div class="col s12">
+          <p class="flow-text">Total Extracted: <span id="TotalExtracted">0</span></p>
+          <p class="flow-text">Current Period Extracted: <span id="CurrentPeriodExtracted">0</span></p>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col s6">
+          <div class="input-field">
+            <label for="ProfilesPerPeriod">Profiles per period</label>
+            <input type="number" id="ProfilesPerPeriod" min="1">
+          </div>
+        </div>
+        <div class="col s6">
+          <div class="input-field">
+            <label for="ExtractHoursPerPeriod">Hours per period</label>
+            <input type="number" id="ExtractHoursPerPeriod" min="1">
+          </div>
+        </div>
+      </div>
+      <button class="premium-btn btn" id="btnStartExtract" disabled>Start</button>
+      <button class="premium-btn btn" id="btnStopExtract" disabled>Cancel</button>
     </div>
 </div>

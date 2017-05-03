@@ -153,12 +153,20 @@ $(document).ready(function(){
 
 		// broadcast message main control scripts starts here
 		$("#moduleSelector").change(function(){
-			if ($("#moduleSelector").val() === '1') {
-				$("#connectNewContacts").show();
-				$("#broadcastMessage").hide();
-			} else {
-				$("#connectNewContacts").hide();
-				$("#broadcastMessage").show();
+			var selected = $("#moduleSelector").val();
+			switch (selected) {
+				case '1':
+					$("#connectNewContacts").show();
+					$("#broadcastMessage,#extractEmails").hide();
+				break;
+				case '2':
+					$("#connectNewContacts,#extractEmails").hide();
+					$("#broadcastMessage").show();
+				break;
+				case '3':
+					$("#extractEmails").show();
+					$("#broadcastMessage, #connectNewContacts").hide();
+				break;
 			}
 		});
 		$("#btnStartMsg").removeAttr("disabled");
