@@ -11,6 +11,8 @@ $(document).ready(function(){
 
 	var MessagePageInterval, MessageSentTotal, MessagePerPeriod, MessageHoursPerPeriod, Message;
 	var MessageCount = 0;
+
+	var lists = new Object();
 	// initialize values
 	chrome.storage.local.get(null, function(data) {
 		console.log("initialize variables");
@@ -157,20 +159,25 @@ $(document).ready(function(){
 			switch (selected) {
 				case '1':
 					$("#connectNewContacts").show();
-					$("#broadcastMessage,#extractEmails").hide();
+					$("#broadcastMessage,#extractEmails,#lists").hide();
 				break;
 				case '2':
-					$("#connectNewContacts,#extractEmails").hide();
+					$("#connectNewContacts,#extractEmails,#lists").hide();
 					$("#broadcastMessage").show();
 				break;
 				case '3':
 					$("#extractEmails").show();
-					$("#broadcastMessage, #connectNewContacts").hide();
+					$("#broadcastMessage, #connectNewContacts,#lists").hide();
+				break;
+				case '4':
+					$("#lists").show();
+					$("#broadcastMessage, #connectNewContacts,#extractEmails").hide();
 				break;
 			}
 		});
 		$("#btnStartMsg").removeAttr("disabled");
 
+		// message broadcast buttons
 		$("#btnStartMsg").click(function(){
 			MessagePerPeriod = $("#MessagePerPeriod").val();
 			MessageHoursPerPeriod = $("#MessageHoursPerPeriod").val();
@@ -200,7 +207,19 @@ $(document).ready(function(){
 			window.location.reload();
 
 		});
+		// end message broadcast buttons
 
+		// create list button
+		$("#btnAddList").click(function(){
+			if($.trim($("#NewListName").val()).length === 0 ){
+				alert("List name can't be empty!");
+			}else{
+				var listName = $.trim($("#NewListName").val());
+				$('#listSelector').append('<option value="'+listName+'" selected="selected">'+listName+'</option>');
+
+			}
+		});
+		// end create list button
 	},5000);
 	
 	
@@ -232,7 +251,7 @@ $(document).ready(function(){
 			    },5000);
 			break;
 			case "standBy":
-				
+					
 			break;
 			case "LastPage":
 				chrome.storage.local.set({'LastPage':value});
@@ -311,7 +330,7 @@ $(document).ready(function(){
 		    });
 		}else{
 			$("#nextPeriodCount").countdowntimer({
-		      	seconds:MessageHoursPerPeriod,
+		      	hours:MessageHoursPerPeriod,
 		      	stopButton : "btnStopMsg",
 		      	timeUp: function(){
 		        	// console.log("Moving to next period.");
@@ -437,14 +456,13 @@ $(document).ready(function(){
 					    	var msg = Message.replace("{first name}", "${firstname}");
 					    	msg = eval("`"+msg+"`");
 					    	$(".msg-messaging-form__message:first").val(msg);
-					    	// setTimeout(function(){
+					    	setTimeout(function(){
 					    		$(".msg-messaging-form__send-button").removeAttr("disabled");
-					    		// $(".msg-messaging-form__send-button").click();
-					    		// $(".msg-messaging-form__send-button").click();
-					    	// },2000);
-					    	// setTimeout(function(){
-					    	// 	$(".msg-overlay-bubble-header__control--close-btn").click();
-					    	// },5000);
+					    		$(".msg-messaging-form__send-button").click();
+					    	},2000);
+					    	setTimeout(function(){
+					    		$(".msg-overlay-bubble-header__control--close-btn").click();
+					    	},5000);
 					    	MessageCount ++;
 					    	clearInterval(MessagePageInterval);
 					    	updateValues('MessageSentTotal',1);
@@ -464,14 +482,13 @@ $(document).ready(function(){
 					    	var msg = Message.replace("{first name}", "${firstname}");
 					    	msg = eval("`"+msg+"`");
 					    	$(".msg-messaging-form__message:first").val(msg);
-					    	// setTimeout(function(){
+					    	setTimeout(function(){
 					    		$(".msg-messaging-form__send-button").removeAttr("disabled");
-					    		// $(".msg-messaging-form__send-button").click();
-					    		// $(".msg-messaging-form__send-button").click();
-					    	// },2000);
-					    	// setTimeout(function(){
-					    	// 	$(".msg-overlay-bubble-header__control--close-btn").click();
-					    	// },5000);
+					    		$(".msg-messaging-form__send-button").click();
+					    	},2000);
+					    	setTimeout(function(){
+					    		$(".msg-overlay-bubble-header__control--close-btn").click();
+					    	},5000);
 					    	MessageCount ++;
 					    	updateValues('MessageSentTotal',1);
 					    	updateValues('MessageCount',1);

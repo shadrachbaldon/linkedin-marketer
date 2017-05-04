@@ -2,7 +2,8 @@
     <select name="endMonth" id="moduleSelector" class="ember-view">
       <option value="1">Connect new contacts</option> 
       <option value="2">Broadcast Message</option>
-      <option value="3">Extract Emails</option>
+      <option value="3">Extract Emails from List</option>
+      <option value="4">Lists</option>
     </select>
     <p class="flow-text">Status: <span id="Status" style="color:#cc0000">Initializing</span></p>
     <div class="row" id="nextPeriodWrap" style="display: none">
@@ -11,7 +12,7 @@
       </div>
     </div>
     <hr>
-    <div id="connectNewContacts">
+    <div id="connectNewContacts" style="display:none;">
       <div class="row">
         <div class="col s12">
           <p class="flow-text">Total Invite: <span id="TotalInvited">0</span></p>
@@ -91,7 +92,6 @@
           <p class="flow-text">Current Period Extracted: <span id="CurrentPeriodExtracted">0</span></p>
         </div>
       </div>
-
       <div class="row">
         <div class="col s6">
           <div class="input-field">
@@ -106,7 +106,25 @@
           </div>
         </div>
       </div>
+      <br>
       <button class="premium-btn btn" id="btnStartExtract" disabled>Start</button>
       <button class="premium-btn btn" id="btnStopExtract" disabled>Cancel</button>
+
+      <hr>
+    </div>
+
+    <div id="lists">
+      <div class="row">
+        <div class="col s12">
+          <input type="text" id="NewListName" placeholder="New List Name"><br><br>
+          <button class="premium-btn btn" id="btnAddList">Add New</button>
+          <br><br>
+          <select id="listSelector">
+            <option>List 1</option>
+            <option>List 2</option>
+            <option>List 3</option>
+          </select>
+        </div>
+      </div>
     </div>
 </div>
