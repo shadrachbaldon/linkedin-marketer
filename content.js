@@ -12,7 +12,7 @@ $(document).ready(function(){
 	var MessagePageInterval, MessageSentTotal, MessagePerPeriod, MessageHoursPerPeriod, Message;
 	var MessageCount = 0;
 
-	var lists = new Object();
+	var ProfileLists, ListNames;
 	// initialize values
 	chrome.storage.local.get(null, function(data) {
 		console.log("initialize variables");
@@ -43,6 +43,7 @@ $(document).ready(function(){
 			console.log("Status: "+data.Status);
 			Status = data.Status;
 		}
+		// for message module
 		if (typeof data.MessageSentTotal === 'undefined') {
 			console.log("no value");
 			chrome.storage.local.set({'MessageSentTotal': 0});
@@ -58,6 +59,16 @@ $(document).ready(function(){
 		}else{
 			console.log("Data MessageCount: "+data.MessageCount);
 			MessageCount = data.MessageCount;
+		}
+
+		// for list module
+		if (typeof data.ProfileLists === 'undefined') {
+			chrome.storage.local.set({'ProfileLists': new Object()});
+			ProfileLists = new Object();
+		}else{
+			ProfileLists = data.ProfileLists;
+			ListNames = Object.keys(data.ProfileLists);
+			console.log("List Names: "+ListNames);
 		}
 		console.log('Settings saved');
 	});
@@ -118,6 +129,12 @@ $(document).ready(function(){
 		$("#TotalSent").text(MessageSentTotal);
 		$("#CurrentPeriodSent").text(MessageCount);
 
+		$.each(ListNames, function(index,value){
+			//gives the list dropdown values from storage
+			var options = `<option value="${value}">${value}</option>`;
+			$("#listSelector").append(options);
+		});
+
 		$("#btnStart").click(function(){
 			ConnectPerPeriod = $("#ConnectsPerPeriod").val();
 			HoursPerPeriod = $("#HoursPerPeriod").val();
@@ -159,18 +176,18 @@ $(document).ready(function(){
 			switch (selected) {
 				case '1':
 					$("#connectNewContacts").show();
-					$("#broadcastMessage,#extractEmails,#lists").hide();
+					$("#broadcastMessage,#extractEmails,#ProfileLists").hide();
 				break;
 				case '2':
-					$("#connectNewContacts,#extractEmails,#lists").hide();
+					$("#connectNewContacts,#extractEmails,#ProfileLists").hide();
 					$("#broadcastMessage").show();
 				break;
 				case '3':
 					$("#extractEmails").show();
-					$("#broadcastMessage, #connectNewContacts,#lists").hide();
+					$("#broadcastMessage, #connectNewContacts,#ProfileLists").hide();
 				break;
 				case '4':
-					$("#lists").show();
+					$("#ProfileLists").show();
 					$("#broadcastMessage, #connectNewContacts,#extractEmails").hide();
 				break;
 			}
@@ -215,14 +232,21 @@ $(document).ready(function(){
 				alert("List name can't be empty!");
 			}else{
 				var listName = $.trim($("#NewListName").val());
-				$('#listSelector').append('<option value="'+listName+'" selected="selected">'+listName+'</option>');
-
+				var tag = `<option value="${listName}"> ${listName} </option>`;
+				$('#listSelector').append(tag);
+				ProfileLists[listName] = new Object();
+				chrome.storage.local.set({'ProfileLists':ProfileLists});
+				chrome.storage.local.get('ProfileLists', function(data){
+					console.log("New ProfileLists val:"+Object.keys(data.ProfileLists));
+				});
+				console.log("ProfileLists:"+Object.keys(ProfileLists).length);
+				console.log("listName:"+listName);
 			}
 		});
 		// end create list button
 	},5000);
 	
-	
+	// 
 	function updateValues(name, value){
 		// console.log("updateValues called");
 		switch(name){
