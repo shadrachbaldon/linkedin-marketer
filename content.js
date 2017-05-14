@@ -12,6 +12,8 @@ $(document).ready(function(){
 	var MessagePageInterval, MessageSentTotal, MessagePerPeriod, MessageHoursPerPeriod, Message;
 	var MessageCount = 0;
 
+	var firstname;
+
 	var ProfileLists, ListNames;
 	// initialize values
 	chrome.storage.local.get(null, function(data) {
@@ -375,11 +377,28 @@ $(document).ready(function(){
 		});
 	}
 
-	function getFirstName(index){
-		nameElements = $(".actor-name");
-		var name = nameElements.get(index).textContent
-		var fname = name.substring(0, name.indexOf(" "));
-		return fname;
+	function getFirstName(from,index){
+		switch(from){
+			case "broadcastMessage":
+				nameElements = $(".actor-name");
+				var name = nameElements.get(index).textContent
+				var fname = name.substring(0, name.indexOf(" "));
+				return fname;
+			break;
+			case "Note":
+				nameElements = $(".search-result__actions--primary:contains('Connect')").parentsUntil(".search-result--person").find(".actor-name")
+				var name = nameElements.get(index).textContent
+				var fname = name.substring(0, name.indexOf(" "));
+				return fname;
+			break;
+		}
+				
+	}
+
+	function convertMsg(textValue){
+		var msg = textValue.replace("{firstname}", "${firstname}");
+		msg = eval("`"+msg+"`");
+		return msg;
 	}
 
 	function connectFromSearchPage(){
@@ -409,7 +428,11 @@ $(document).ready(function(){
 					    	}else{
 					    		console.log("found note!"+$.trim($('#note').val()).length);
 					    		$(".send-invite__actions > .button-secondary-large").click();
-					    		$("#custom-message").val(Note);
+					    		
+					    		firstname = getFirstName("Note",index);
+					    		var convertedText = convertMsg(Note);
+					    		$("#custom-message").val(convertedText);
+					    		console.log("Name: "+firstname);
 					    		$(".send-invite__actions > .button-primary-large").click();
 					    	}
 					    	
@@ -437,7 +460,11 @@ $(document).ready(function(){
 					    	}else{
 					    		console.log("found note!"+$.trim($('#note').val()).length);
 					    		$(".send-invite__actions > .button-secondary-large").click();
-					    		$("#custom-message").val(Note);
+					    		
+					    		firstname = getFirstName("Note",index);
+					    		var convertedText = convertMsg(Note);
+					    		$("#custom-message").val(convertedText);
+					    		console.log("Name: "+firstname);
 					    		$(".send-invite__actions > .button-primary-large").click();
 					    	}
 					    	ConnectCount ++;
@@ -476,10 +503,9 @@ $(document).ready(function(){
 					        	scrollTop: $(msgElements.get(index)).offset().top
 					    	}, 300);
 					    	msgElements.get(index).click();
-					    	var firstname = getFirstName(index);
-					    	var msg = Message.replace("{first name}", "${firstname}");
-					    	msg = eval("`"+msg+"`");
-					    	$(".msg-messaging-form__message:first").val(msg);
+					    	firstname = getFirstName("broadcastMessage",index);
+					    	var convertedText = convertMsg(Message);
+					    	$(".msg-messaging-form__message:first").val(convertedText);
 					    	setTimeout(function(){
 					    		$(".msg-messaging-form__send-button").removeAttr("disabled");
 					    		$(".msg-messaging-form__send-button").click();
@@ -502,10 +528,9 @@ $(document).ready(function(){
 					        	scrollTop: $(msgElements.get(index)).offset().top
 					    	}, 300);
 					    	msgElements.get(index).click();
-					    	var firstname = getFirstName(index);
-					    	var msg = Message.replace("{first name}", "${firstname}");
-					    	msg = eval("`"+msg+"`");
-					    	$(".msg-messaging-form__message:first").val(msg);
+					    	firstname = getFirstName("broadcastMessage",index);
+					    	var convertedText = convertMsg(Message);
+					    	$(".msg-messaging-form__message:first").val(convertedText);
 					    	setTimeout(function(){
 					    		$(".msg-messaging-form__send-button").removeAttr("disabled");
 					    		$(".msg-messaging-form__send-button").click();

@@ -2,8 +2,8 @@
     <select name="endMonth" id="moduleSelector" class="ember-view">
       <option value="1">Connect new contacts</option> 
       <option value="2">Broadcast Message</option>
-      <option value="3">Extract Emails from List</option>
-      <option value="4">Lists</option>
+      <!-- <option value="3">Extract Emails from List</option>
+      <option value="4">Lists</option> -->
     </select>
     <p class="flow-text">Status: <span id="Status" style="color:#cc0000">Initializing</span></p>
     <div class="row" id="nextPeriodWrap" style="display: none">
@@ -12,7 +12,7 @@
       </div>
     </div>
     <hr>
-    <div id="connectNewContacts" style="display:none;">
+    <div id="connectNewContacts">
       <div class="row">
         <div class="col s12">
           <p class="flow-text">Total Invite: <span id="TotalInvited">0</span></p>
@@ -85,7 +85,7 @@
       <button class="premium-btn btn" id="btnStopMsg" disabled>Cancel</button>
     </div>
 
-    <div id="extractEmails" style="display:none;">
+    <!-- <div id="extractEmails" style="display:none;">
       <div class="row">
         <div class="col s12">
           <p class="flow-text">Total Extracted: <span id="TotalExtracted">0</span></p>
@@ -113,7 +113,7 @@
       <hr>
     </div>
 
-    <div id="lists">
+    <div id="lists" style="display:none;">
       <div class="row">
         <div class="col s12">
           <input type="text" id="NewListName" placeholder="New List Name"><br><br>
@@ -123,5 +123,5 @@
           </select>
         </div>
       </div>
-    </div>
+    </div> -->
 </div>
