@@ -2,7 +2,7 @@
   "manifest_version": 2,
 
   "name": "Linkedin Marketer",
-  "description": "Auto connect to search result page",
+  "description": "Auto connect on 2nd and 3rd connections and can broadcast messages to 1st connections on search result page",
   "version": "1.0",
 
   "background": {

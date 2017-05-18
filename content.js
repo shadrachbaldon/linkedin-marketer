@@ -93,6 +93,7 @@ $(document).ready(function(){
 					$("#note").val(data.Note);
 					HoursPerPeriod = parseInt(data.HoursPerPeriod);
 					ConnectPerPeriod = parseInt(data.ConnectPerPeriod);
+					Note = data.Note;
 				}
 			});
 			$("#btnStart").attr("disabled","disabled");
@@ -170,6 +171,23 @@ $(document).ready(function(){
 			clearInterval(ConnectPageInterval);
 			console.log("canceled");
 			window.location.reload();
+		});
+
+		$("#btnContinueConnect").click(function(){
+			$(this).attr("disabled","disabled");
+			$("#btnStart").attr("disabled","disabled");
+			$("#btnStop").removeAttr("disabled");
+			chrome.storage.local.set({'Status':'continueConnect'});
+			navigateToLastPage();
+		});
+
+		chrome.storage.local.get(['LastPage'],function(data){
+				
+			if (typeof data.LastPage === 'undefined') {
+				$("#btnContinueConnect").attr("disabled","disabled");
+			}else{
+				$("#btnContinueConnect").removeAttr("disabled");
+			}
 		});
 
 		// broadcast message main control scripts starts here
@@ -337,8 +355,24 @@ $(document).ready(function(){
 				
 	}
 
+	function saveForContinue(fromModule){
+		switch(fromModule){
+			case "connect":
+				chrome.storage.local.set({
+					'LastConnectPerPeriod': ConnectPerPeriod,
+					'LastConnectHoursPerPeriod': HoursPerPeriod,
+					'LastNote':Note
+				});
+			break;
+
+			case "msgBroadcast":
+
+			break;
+		}
+
+	}
+
 	function standBy(fromModule,index){
-		// console.log("standBy called");
 		chrome.storage.local.set({'LastPage':window.location.href});
 		$("#nextPeriodWrap").show();
 	    $("#Status").text("Waiting for the next period").css("color","#aa0000"); //change the status display
@@ -386,8 +420,8 @@ $(document).ready(function(){
 				return fname;
 			break;
 			case "Note":
-				nameElements = $(".search-result__actions--primary:contains('Connect')").parentsUntil(".search-result--person").find(".actor-name")
-				var name = nameElements.get(index).textContent
+				nameElements = $(".search-result__actions--primary:contains('Connect')").parentsUntil(".search-result--person").find(".actor-name");
+				var name = nameElements.get(index).textContent;
 				var fname = name.substring(0, name.indexOf(" "));
 				return fname;
 			break;
@@ -525,7 +559,7 @@ $(document).ready(function(){
 					    	},3000);
 				    	}else{
 				    		$('html, body').animate({
-					        	scrollTop: $(msgElements.get(index)).offset().top
+								scrollTop: $(msgElements.get(index)).offset().top
 					    	}, 300);
 					    	msgElements.get(index).click();
 					    	firstname = getFirstName("broadcastMessage",index);
