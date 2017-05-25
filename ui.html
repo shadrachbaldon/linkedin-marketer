@@ -1,5 +1,6 @@
 <div style="width: 300px;position: fixed; bottom: 0; right: 0;padding:20px;z-index: 9999999;background-color: #fff">
-    <select name="endMonth" id="moduleSelector" class="ember-view">
+    <strong>Module Selector</strong>
+    <select name="endMonth" id="moduleSelector" class="ember-view" disabled>
       <option value="1">Connect new contacts</option> 
       <option value="2">Broadcast Message</option>
       <!-- <option value="3">Extract Emails from List</option> -->
@@ -115,10 +116,23 @@
         <div class="col s12">
           <input type="text" id="NewListName" placeholder="New List Name"><br><br>
           <button class="premium-btn btn" id="btnAddList">Add New</button>
+          <button class="premium-btn btn" id="btnViewList">View</button>
           <br><br>
           <select id="listSelector">
+            <option value="none">--Select a list--</option>
           </select>
+          <br><br>
+          <div id="ActiveList" style="display: none;">
+            <strong><em><span id="ActiveListName">BIG DATA SALES DALLAS</span></em></strong>
+            <br><br>
+            <p>Total list item: <span id="totalItem">0000</span></p>
+            <br>
+            <button class="premium-btn btn" id="CollectList" style="max-width: 100%;width: 100%; margin-bottom:5px;">Collect</button> <br>
+            <button class="button-secondary-medium btn" id="btnContinueConnect"  style="max-width: 100%;width: 100%;" disabled >Stop</button>
+          </div>
         </div>
       </div>
     </div> 
 </div>
+
+<!-- JOCKPOT: https://www.linkedin.com/messaging/compose/?after=profile.view&recipient=heena-malik-490270141 -->

@@ -64,65 +64,20 @@ $(document).ready(function(){
 		}
 
 		// for list module
-		if (typeof data.ProfileLists === 'undefined') {
-			chrome.storage.local.set({'ProfileLists': new Object()});
-			ProfileLists = new Object();
-		}else{
-			ProfileLists = data.ProfileLists;
-			ListNames = Object.keys(data.ProfileLists);
-			console.log("List Names: "+ListNames);
-		}
+		// if (typeof data.ProfileLists === 'undefined') {
+		// 	chrome.storage.local.set({'ProfileLists': new Object()});
+		// 	ProfileLists = new Object();
+		// }else{
+		// 	ProfileLists = data.ProfileLists;
+		// 	ListNames = Object.keys(data.ProfileLists);
+		// 	console.log("List Names: "+ListNames);
+		// }
+
+		getAllLists();
+
 		console.log('Settings saved');
 	});
-	// const employeeData = [
- //            { id: "00-01", name: "gopal", age: 35, email: "gopal@tutorialspoint.com" },
- //            { id: "00-02", name: "prasad", age: 32, email: "prasad@tutorialspoint.com" }
- //         ];
-	var db;
-	var dbrequest = window.indexedDB.open("LinkedinMarterDB", 1);
-	dbrequest.onsuccess = function(event) {
-       db = dbrequest.result;
-       console.log("success: "+ db);
-   };        
 
-
-    dbrequest.onupgradeneeded = function(event) {
-        var db = event.target.result;
-        var objectStore = db.createObjectStore("Lists", { keyPath: "name" });
-    }
-
-    function addNewList(listName) {
-		console.log(db);
-        var request = db.transaction(["Lists"], "readwrite")
-        .objectStore("Lists")
-        .add({ name: listName });
-        
-        request.onsuccess = function(event) {
-           alert(`${listName} is added!`);
-        };
-        
-        request.onerror = function(event) {
-           alert("List already exist! ");
-        }
-    }
-
-    function checkDup(table,key){
-		console.log(table+" : "+key);
-		var transaction = db.transaction([table]);
-		var objectStore = transaction.objectStore(table);
-		var request = objectStore.get(key);
-
-    	request.onsuccess = function(event) {
-    		console.log("success: "+request)
-    		return true;
-    	}
-
-    	request.onerror = function(event) {
-    		console.log("error: "+request.result)
-    		return false;
-    	}
-    }
-	
 	
 	setTimeout(function(){
 		console.log("ConnectPerPeriod: "+ ConnectPerPeriod);
@@ -173,6 +128,7 @@ $(document).ready(function(){
 		}else{
 			$("#Status").text("Ready").css("color","#00aa00");
 			$("#btnStart").removeAttr("disabled");
+			$("#moduleSelector").removeAttr("disabled");
 		}
 		
 		$("#TotalInvited").text(InvitedTotal);
@@ -181,11 +137,7 @@ $(document).ready(function(){
 		$("#TotalSent").text(MessageSentTotal);
 		$("#CurrentPeriodSent").text(MessageCount);
 
-		$.each(ListNames, function(index,value){
-			//gives the list dropdown values from storage
-			var options = `<option value="${value}">${value}</option>`;
-			$("#listSelector").append(options);
-		});
+		
 
 		$("#btnStart").click(function(){
 			ConnectPerPeriod = $("#ConnectsPerPeriod").val();
@@ -301,25 +253,25 @@ $(document).ready(function(){
 				alert("List name can't be empty!");
 			}else{
 				var listName = $.trim($("#NewListName").val());
-				var tag = `<option value="${listName}"> ${listName} </option>`;
-				$('#listSelector').append(tag);
-				// ProfileLists[listName] = new Object();
-				// chrome.storage.local.set({'ProfileLists':ProfileLists});
-				// chrome.storage.local.get('ProfileLists', function(data){
-				// 	console.log("New ProfileLists val:"+Object.keys(data.ProfileLists));
-				// });
-				// console.log("ProfileLists:"+Object.keys(ProfileLists).length);
-				if (checkDup('Lists',listName)) {
-					console.log("new");
-				}else{
-					console.log("duplicate");
-				}
 				addNewList(listName);
-				
-				
 			}
 		});
+
+		$("#btnViewList").click(function(){
+			getAllLists();
+		});
 		// end create list button
+
+		$("#listSelector").change(function(){
+			var selected = $("#listSelector").val();
+			if (selected == "none") {
+				$("#ActiveList").hide();
+			}else{
+				$("#ActiveListName").text(selected);
+				$("#ActiveList").show();
+			}
+		});
+
 	},5000);
 	
 });
