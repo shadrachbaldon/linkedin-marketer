@@ -24,7 +24,7 @@
   "content_scripts": [
     {
       "matches": ["https://www.linkedin.com/*"],
-      "js": ["lib/js/jquery.min.js","lib/js/jquery.countdownTimer.min.js","lib/js/functions.js","content.js"]
+      "js": ["lib/js/jquery.min.js","lib/js/jquery.countdownTimer.min.js","content.js","lib/js/functions.js"]
     }
   ],
   "web_accessible_resources": [

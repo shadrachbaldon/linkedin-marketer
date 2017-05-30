@@ -14,7 +14,7 @@ $(document).ready(function(){
 
 	var firstname;
 
-	var ProfileLists, ListNames;
+	var ProfileLists, ListNames, ListInterval,ListSelected;
 	// initialize values
 	chrome.storage.local.get(null, function(data) {
 		console.log("initialize variables");
@@ -62,16 +62,6 @@ $(document).ready(function(){
 			console.log("Data MessageCount: "+data.MessageCount);
 			MessageCount = data.MessageCount;
 		}
-
-		// for list module
-		// if (typeof data.ProfileLists === 'undefined') {
-		// 	chrome.storage.local.set({'ProfileLists': new Object()});
-		// 	ProfileLists = new Object();
-		// }else{
-		// 	ProfileLists = data.ProfileLists;
-		// 	ListNames = Object.keys(data.ProfileLists);
-		// 	console.log("List Names: "+ListNames);
-		// }
 
 		getAllLists();
 
@@ -269,7 +259,54 @@ $(document).ready(function(){
 			}else{
 				$("#ActiveListName").text(selected);
 				$("#ActiveList").show();
+				ListSelected = selected;
+				console.log(`Active List: ${ListSelected}`);
 			}
+		});
+
+		$("#btnStartCollectList").click(function(){
+			$(this).attr("disabled","disabled");
+			$("#btnStopCollect").removeAttr("disabled");
+			$("#Status").text("Collecting 1st Contacts").css("color","#0000aa");
+
+			$('html, body').animate({
+			   	scrollTop: 1000
+			}, 3000);
+			setTimeout(function(){
+
+				var names = $(".actor-name");
+				var ids = $(".search-result__info a.search-result__result-link");
+				var counter = 0;
+				console.log(`names: ${names.length} - ids: ${ids.length}`);
+				ListInterval = setInterval(function(){
+					var name,id;
+					if (counter === 10) {
+						clearInterval(ListInterval);
+						nextPage('CollectList');
+						console.log("interval cleared!");
+					} else{
+						//extracts the name
+						name = names.get(counter).innerHTML;
+						console.log("name: "+name);
+						//extracts the id
+						id = ids.eq(counter).attr("href");
+						id = id.substring(4,id.length-1); //remove the /in/ on first and / on last
+						console.log("id: "+id);
+						var data = [ListSelected,id,name];
+						addNewListItem(data);
+
+					}
+					counter +=1;
+				},5000);
+
+			},3000);
+
+		});
+
+		$("#btnStopCollect").click(function(){
+			$(this).attr("disabled","disabled");
+			$("#btnStartCollectList").removeAttr("disabled");
+			clearInterval(ListInterval);
 		});
 
 	},5000);
