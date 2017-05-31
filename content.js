@@ -260,6 +260,7 @@ $(document).ready(function(){
 				$("#ActiveListName").text(selected);
 				$("#ActiveList").show();
 				ListSelected = selected;
+				updateCountDisplay(ListSelected);
 				console.log(`Active List: ${ListSelected}`);
 			}
 		});
@@ -269,7 +270,23 @@ $(document).ready(function(){
 			$("#btnStopCollect").removeAttr("disabled");
 			$("#Status").text("Collecting 1st Contacts").css("color","#0000aa");
 
-			$('html, body').animate({
+			collectList();
+
+		});
+
+		$("#btnStopCollect").click(function(){
+			$(this).attr("disabled","disabled");
+			$("#btnStartCollectList").removeAttr("disabled");
+			console.log("stopped!");
+			clearInterval(ListInterval);
+		});
+
+	},5000);
+	
+	
+	function collectList(){
+
+		$('html, body').animate({
 			   	scrollTop: 1000
 			}, 3000);
 			setTimeout(function(){
@@ -277,13 +294,16 @@ $(document).ready(function(){
 				var names = $(".actor-name");
 				var ids = $(".search-result__info a.search-result__result-link");
 				var counter = 0;
-				console.log(`names: ${names.length} - ids: ${ids.length}`);
 				ListInterval = setInterval(function(){
 					var name,id;
-					if (counter === 10) {
+					if (counter === names.length) {
 						clearInterval(ListInterval);
 						nextPage('CollectList');
 						console.log("interval cleared!");
+						setTimeout(function(){
+					    	// waits 3 seconds before continuing to make sure next page elements was loaded
+					    	collectList();
+						},3000);
 					} else{
 						//extracts the name
 						name = names.get(counter).innerHTML;
@@ -294,21 +314,18 @@ $(document).ready(function(){
 						console.log("id: "+id);
 						var data = [ListSelected,id,name];
 						addNewListItem(data);
+						updateCountDisplay(ListSelected);
+
+						// continue HERE; get the total number of people on the page and make it
+						// as the basis of counter limit
 
 					}
 					counter +=1;
-				},5000);
+				},2000);
 
 			},3000);
 
-		});
+	}
 
-		$("#btnStopCollect").click(function(){
-			$(this).attr("disabled","disabled");
-			$("#btnStartCollectList").removeAttr("disabled");
-			clearInterval(ListInterval);
-		});
 
-	},5000);
-	
 });
