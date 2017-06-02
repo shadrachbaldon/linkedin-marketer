@@ -63,7 +63,8 @@ $(document).ready(function(){
 			MessageCount = data.MessageCount;
 		}
 
-		getAllLists();
+		getAllLists('ListModule'); //get the lists names for list module
+		getAllLists('broadcastMessage');//get the lists names for broadcast message module
 
 		console.log('Settings saved');
 	});
@@ -254,14 +255,35 @@ $(document).ready(function(){
 
 		$("#listSelector").change(function(){
 			var selected = $("#listSelector").val();
-			if (selected == "none") {
-				$("#ActiveList").hide();
-			}else{
-				$("#ActiveListName").text(selected);
-				$("#ActiveList").show();
-				ListSelected = selected;
-				updateCountDisplay(ListSelected);
-				console.log(`Active List: ${ListSelected}`);
+			switch (selected){
+				case "none":
+					$("#ActiveList, #newList").hide();
+				break;
+				case "newList":
+					$("#ActiveList").hide();
+					$("#newList").show();
+				break;
+				default:
+					$("#ActiveListName").text(selected);
+					$("#ActiveList").show();
+					$("#newList").hide();
+					ListSelected = selected;
+					updateCountDisplay(ListSelected);
+					console.log(`Active List: ${ListSelected}`);
+
+			}
+		});
+
+		$("#broadcastListSelector").change(function(){
+			var selected = $("#broadcastListSelector").val();
+			switch (selected){
+				case "none":
+					
+				break;
+				
+				default:
+					
+
 			}
 		});
 
@@ -283,49 +305,5 @@ $(document).ready(function(){
 
 	},5000);
 	
-	
-	function collectList(){
-
-		$('html, body').animate({
-			   	scrollTop: 1000
-			}, 3000);
-			setTimeout(function(){
-
-				var names = $(".actor-name");
-				var ids = $(".search-result__info a.search-result__result-link");
-				var counter = 0;
-				ListInterval = setInterval(function(){
-					var name,id;
-					if (counter === names.length) {
-						clearInterval(ListInterval);
-						nextPage('CollectList');
-						console.log("interval cleared!");
-						setTimeout(function(){
-					    	// waits 3 seconds before continuing to make sure next page elements was loaded
-					    	collectList();
-						},3000);
-					} else{
-						//extracts the name
-						name = names.get(counter).innerHTML;
-						console.log("name: "+name);
-						//extracts the id
-						id = ids.eq(counter).attr("href");
-						id = id.substring(4,id.length-1); //remove the /in/ on first and / on last
-						console.log("id: "+id);
-						var data = [ListSelected,id,name];
-						addNewListItem(data);
-						updateCountDisplay(ListSelected);
-
-						// continue HERE; get the total number of people on the page and make it
-						// as the basis of counter limit
-
-					}
-					counter +=1;
-				},2000);
-
-			},3000);
-
-	}
-
 
 });
