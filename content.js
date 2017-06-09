@@ -9,10 +9,10 @@ $(document).ready(function(){
 	var ConnectPageInterval,Status,InvitedTotal,ConnectPerPeriod,HoursPerPeriod,Note;
 	var ConnectCount = 0;
 
-	var MessagePageInterval, MessageSentTotal, MessagePerPeriod, MessageHoursPerPeriod, Message;
-	var MessageCount = 0;
+	var MessagePageInterval, MessageSentTotal, MessagePerPeriod, MessageHoursPerPeriod, Message, Recipients;
+	var MessageCount = 0, Mode;
 
-	var firstname;
+	var firstname,MessageContinue;
 
 	var ProfileLists, ListNames, ListInterval,ListSelected;
 	// initialize values
@@ -63,14 +63,38 @@ $(document).ready(function(){
 			MessageCount = data.MessageCount;
 		}
 
-		getAllLists('ListModule'); //get the lists names for list module
-		getAllLists('broadcastMessage');//get the lists names for broadcast message module
+		
 
 		console.log('Settings saved');
 	});
 
+	getAllLists('ListModule'); //get the lists names for list module
+	getAllLists('broadcastMessage');//get the lists names for broadcast message module
+
+	
 	
 	setTimeout(function(){
+
+		// check if message broadcast is processing
+		getCurrentMsgSettings(function(result){
+			console.log(result.Continue);
+			if (result.Continue) {
+				$("#moduleSelector").val("2");
+				$("#moduleSelector").attr("disabled","disabled");
+				$("#connectNewContacts,#extractEmails,#ProfileLists").hide();
+				$("#broadcastMessage").show();
+
+				// populates the value of the form
+				$("#MessagePerPeriod").val(result.MessagePerPeriod);
+				$("#MessageHoursPerPeriod").val(result.MessageHoursPerPeriod);
+				$("#message").val(result.Message);
+				$("#Mode").val(result.Mode);
+				$("#broadcastListSelector").val(result.Recipients);
+
+				broadcastMessage(result);
+			}
+		});
+
 		console.log("ConnectPerPeriod: "+ ConnectPerPeriod);
 		if (Status === "continueConnect") {
 			chrome.storage.local.set({'Status':'false'});
@@ -212,19 +236,45 @@ $(document).ready(function(){
 			MessageHoursPerPeriod = $("#MessageHoursPerPeriod").val();
 			MessageHoursPerPeriod = parseInt(MessageHoursPerPeriod);
 			MessagePerPeriod = parseInt(MessagePerPeriod);
-			if (MessagePerPeriod === '' || MessageHoursPerPeriod === '' || $.trim($('#message').val()).length === 0) {
+			Recipients = $("#broadcastListSelector").val();
+			Mode = $("#Mode").val();
+			if (MessagePerPeriod === '' || MessageHoursPerPeriod === '' || $.trim($('#message').val()).length === 0 || Recipients === 'none') {
 				alert("All fields must have a value!");
 			}else{
+
 				console.log("MessageHoursPerPeriod: "+MessageHoursPerPeriod);
 				console.log("MessagePerPeriod: "+MessagePerPeriod);
 				Message = $('#message').val();
 				chrome.storage.local.set({'MessagePerPeriod':MessagePerPeriod,'MessageHoursPerPeriod':MessageHoursPerPeriod,'Message':Message});
+				var data = {
+					"MessagePerPeriod":MessagePerPeriod,
+					"MessageHoursPerPeriod":MessageHoursPerPeriod,
+					"Message":Message,
+					"Recipients":Recipients,
+					"Mode":Mode
+				};
 				$(this).attr("disabled","disabled");
 				$("#moduleSelector").attr("disabled","disabled");
 				$("#btnStopMsg").removeAttr("disabled");
-				SendMessageFromSearchPage(0);
+				broadcastMessage(data);
+
+				// setTimeout(function(){
+					// console.log(MessageContinue);
+				// },3000);
 			}
 
+		});
+
+		$("#btnFocus").click(function(){
+			focusForm();
+		});
+
+		$("#btnType").click(function(){
+			typeMsg("test");
+		});
+
+		$("#btnSend").click(function(){
+			clickSendBtn();
 		});
 
 		$("#btnStopMsg").click(function(){
@@ -233,7 +283,7 @@ $(document).ready(function(){
 			chrome.storage.local.set({'MessageCount':0, 'Status':'false'});
 			clearInterval(MessagePageInterval);
 			console.log("canceled");
-			window.location.reload();
+			// window.location.reload();
 
 		});
 		// end message broadcast buttons
@@ -248,9 +298,6 @@ $(document).ready(function(){
 			}
 		});
 
-		$("#btnViewList").click(function(){
-			getAllLists();
-		});
 		// end create list button
 
 		$("#listSelector").change(function(){
@@ -270,7 +317,6 @@ $(document).ready(function(){
 					ListSelected = selected;
 					updateCountDisplay(ListSelected);
 					console.log(`Active List: ${ListSelected}`);
-
 			}
 		});
 
@@ -280,9 +326,8 @@ $(document).ready(function(){
 				case "none":
 					
 				break;
-				
 				default:
-					
+					// getRecipients(selected,"firstMsg");
 
 			}
 		});
@@ -291,8 +336,8 @@ $(document).ready(function(){
 			$(this).attr("disabled","disabled");
 			$("#btnStopCollect").removeAttr("disabled");
 			$("#Status").text("Collecting 1st Contacts").css("color","#0000aa");
-
-			collectList();
+			
+			collectList(ListSelected);
 
 		});
 
