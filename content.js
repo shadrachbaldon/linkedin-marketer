@@ -70,6 +70,7 @@ $(document).ready(function(){
 
 	getAllLists('ListModule'); //get the lists names for list module
 	getAllLists('broadcastMessage');//get the lists names for broadcast message module
+	initializeUI();
 
 	
 	
@@ -198,7 +199,6 @@ $(document).ready(function(){
 		});
 
 		chrome.storage.local.get(['LastPage'],function(data){
-				
 			if (typeof data.LastPage === 'undefined') {
 				$("#btnContinueConnect").attr("disabled","disabled");
 			}else{
@@ -228,11 +228,10 @@ $(document).ready(function(){
 				break;
 			}
 		});
-		$("#btnStartMsg").removeAttr("disabled");
 
 		// message broadcast buttons
 		$("#btnStartMsg").click(function(){
-			MessagePerPeriod = $("#MessagePerPeriod").val();
+			MessagePerPeriod = $("#MessagePerPeriod").val();0
 			MessageHoursPerPeriod = $("#MessageHoursPerPeriod").val();
 			MessageHoursPerPeriod = parseInt(MessageHoursPerPeriod);
 			MessagePerPeriod = parseInt(MessagePerPeriod);
@@ -263,6 +262,14 @@ $(document).ready(function(){
 				// },3000);
 			}
 
+		});
+
+		$("#btnClearMsg").click(function(){
+			resetBroadcastSettings();
+		});
+
+		$("#btnContinueMsg").click(function(){
+			continueBroadcastMessage();
 		});
 
 		$("#btnFocus").click(function(){
